@@ -1,0 +1,19 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc && node build/src/test/test.js",
+    "start": "tsc && node build/src/start.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ws": "^7.4.0",
+    "nodejs-websocket": "^1.7.2",
+    "protobufjs": "^6.8.8",
+    "ws": "^7.4.4",
+    "@types/node": "^10.11.0"
+  }
+}

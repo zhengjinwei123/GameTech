@@ -1,0 +1,86 @@
+syntax = "proto3";
+package c2s;
+
+
+enum RET {
+    RET_ERROR = 0;
+    RET_OK = 1;
+    RET_PASSWORD_ERROR = 2;
+    RET_ACCOUNT_NOT_EXISTS = 3;
+    RET_USER_HAS_LOGIN = 4;
+}
+
+message FrameMsg {
+    optional uint32 op = 1;
+    optional uint32 step = 2;
+    optional uint32 clientId = 3;
+}
+
+message FrameMsgList {
+    repeated FrameMsg frame = 1;
+}
+
+enum MSGID {
+    ID_S2C_ASK_RESPONSE = 10001;
+
+    ID_C2S_LOGIN_REQUEST = 11001;
+    ID_S2C_LOGIN_RESPONSE = 11002;
+
+    // 玩家发送帧
+    ID_C2S_FRAMESYNC_REQUEST = 11003;
+    // 服务器广播帧
+    ID_S2C_FRAMESYNC_RESPONSE = 11004;
+
+    // 玩家进入场景
+    ID_S2C_PLAYER_ENTER_RESPONSE = 11005;
+
+    ID_S2C_PLAYER_LEAVE_RESPONSE = 11006;
+}
+
+message S2C_Ask_Response
+{
+	optional MSGID msgid = 1[default = ID_S2C_ASK_RESPONSE];
+	optional int32 askid = 2;
+	optional int32 errorcode = 3;
+}
+
+message C2S_Login_Request {
+    optional MSGID msgid = 1 [default = ID_C2S_LOGIN_REQUEST];
+    optional string account = 2;
+    optional string password = 3;
+}
+
+message S2C_Login_Response {
+    optional MSGID msgid = 1[default = ID_S2C_LOGIN_RESPONSE];
+    optional uint32 ret = 2;
+    optional uint32 timestamp = 3;
+    optional uint32 frameInterval = 4;
+    optional uint32 clientId = 5;
+    repeated uint32 clients = 6;
+    repeated FrameMsgList frames = 7;
+}
+
+message C2S_FrameSync_Request {
+    optional MSGID msgid = 1[default = ID_C2S_FRAMESYNC_REQUEST];
+    optional uint32 op = 2;// 操作
+}
+
+
+
+message S2C_FrameSync_Response {
+    optional MSGID msgid = 1[default = ID_S2C_FRAMESYNC_RESPONSE];
+    optional uint32 ret = 2; 
+    repeated FrameMsg frames = 3; // 
+}
+
+message S2C_PlayerEnter_Response {
+    optional MSGID msgid = 1[default = ID_S2C_PLAYER_ENTER_RESPONSE];
+    optional uint32 ret = 2;
+    optional uint32 clientId = 3;
+}
+
+message S2C_PlayerLeave_Response {
+    optional MSGID msgid = 1[default = ID_S2C_PLAYER_LEAVE_RESPONSE];
+    optional uint32 ret = 2;
+    optional uint32 clientId = 3;
+}

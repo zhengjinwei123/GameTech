@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>websocket example</title>
+    <script type="text/javascript" src="./c2s_proto.js" ></script>
+</head>
+<body>
+	<script type="text/javascript">
+	var ws = new WebSocket("ws://127.0.0.1:8801");
+	
+	ws.onopen = function(){
+        let a = <C2S_Login_Request>{}
+        a.account = "zjw"
+        a.password = "123"
+
+        let buffer = encodeC2S_Login_Request(a)
+        let message = <Message>{
+            length: buffer.length,
+            msgtype: encodeMSGID.ID_C2S_LOGIN_REQUEST,
+            msg: Buffer.from(buffer),
+        }
+
+        let buf = Buffer.alloc(message.length + 8)
+        buf.writeInt32LE(message.length + 8, 0)
+        buf.writeInt32LE(message.msgtype, 4)
+
+        console.log(message)
+
+        message.msg.copy(buf, 8, 0, message.length)
+        sock.send(buf)
+	};
+	ws.onmessage = function(data){
+		
+	};
+	ws.onclose = function(){
+	
+	};
+	ws.onerror = function(error){
+		console.log(ev);
+	};
+	</script>
+</body>
