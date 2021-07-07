@@ -17,7 +17,7 @@ namespace zbluenet {
 			DEBUG = 0,
 			INFO,
 			WARNING,
-			ERROR,
+			ERR,
 
 			MAX,
 		};
@@ -50,7 +50,7 @@ namespace zbluenet {
 	zbluenet::LoggerMgr::getInstance()->log(0, zbluenet::LogLevel::WARNING, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 #define LOG_ERROR(fmt, ...) \
-	zbluenet::LoggerMgr::getInstance()->log(0, zbluenet::LogLevel::ERROR, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+	zbluenet::LoggerMgr::getInstance()->log(0, zbluenet::LogLevel::ERR, __FILE__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 #define PLAIN_LOG_DEBUG(fmt, ...) \
 	zbluenet::LoggerMgr::getInstance()->plainLog(0,  zbluenet::LogLevel::DEBUG, fmt, ##__VA_ARGS__)
@@ -62,7 +62,7 @@ namespace zbluenet {
 	zbluenet::LoggerMgr::getInstance()->plainLog(0,  zbluenet::LogLevel::WARNING, fmt, ##__VA_ARGS__)
 
 #define PLAIN_LOG_ERROR(fmt, ...) \
-	zbluenet::LoggerMgr::getInstance()->plainLog(0,  zbluenet::LogLevel::ERROR, fmt, ##__VA_ARGS__)
+	zbluenet::LoggerMgr::getInstance()->plainLog(0,  zbluenet::LogLevel::ERR, fmt, ##__VA_ARGS__)
 
 #define LOG_MESSAGE(fmt, ...) \
 	zbluenet::logNetMessage(fmt, ##__VA_ARGS__)

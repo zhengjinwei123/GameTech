@@ -62,7 +62,7 @@ namespace zbluenet {
 		static constexpr int log_level_map[] = {
 			LogLevel::DEBUG,
 			LogLevel::WARNING,
-			LogLevel::ERROR
+			LogLevel::ERR
 		};
 		
 		zbluenet::LoggerMgr::getInstance()->log(0, log_level_map[level], "", 0, "base_log", fmt, args);

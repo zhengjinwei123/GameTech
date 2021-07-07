@@ -28,6 +28,7 @@ namespace zbluenet {
 			~NetWork()
 			{
 #ifdef _WIN32
+				BASE_WARNING("close NetWork");
 				WSACleanup();
 #endif
 			}
@@ -88,6 +89,19 @@ namespace zbluenet {
 					return SOCKET_ERROR;
 				}
 				return 0;
+			}
+
+			static int setCloseOnExec(SOCKET fd)
+			{
+#ifdef _WIN32
+				return true;
+#else
+				int flags = ::fcntl(fd, F_GETFD, 0);
+				if (::fcntl(fd, F_SETFD, flags | FD_CLOEXEC) != 0) {
+					return false;
+				}
+				return true;
+#endif
 			}
 
 			static int destroySocket(SOCKET fd)
