@@ -6,11 +6,12 @@
 #include <zbluenet/net/platform.h>
 #include <zbluenet/net/socket_address.h>
 #include <zbluenet/net/network.h>
+#include <zbluenet/net/io_device.h>
 
 namespace zbluenet {
 	namespace net {
 
-		class TcpSocket : public Noncopyable {
+		class TcpSocket : public IODevice {
 		public:
 			TcpSocket();
 			virtual ~TcpSocket();
@@ -67,6 +68,9 @@ namespace zbluenet {
 			bool acceptNonblock(TcpSocket *peer);
 
 			bool setNonblock();
+
+		private:
+			ZBLUENET_NONCOPYABLE(TcpSocket);
 
 		private:
 			SOCKET fd_;
