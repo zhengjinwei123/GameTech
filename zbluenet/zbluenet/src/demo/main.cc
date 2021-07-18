@@ -6,6 +6,7 @@
 #include <zbluenet/type_define.h>
 #include <zbluenet/log.h>
 #include <zbluenet/net/network.h>
+#include <zbluenet/server/tcp_server.h>
 
 #include "thread.hpp"
 #include <memory>
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
 	zbluenet::LogManager::getInstance()->setMaxLoggerCount(2);
 
 	std::string log_file_main = "./zbluenet.%Y%m%d.log";
-	if (zbluenet::LogManager::getInstance()->initLogger(log_file_main, false, zbluenet::LogLevel::DEBUG) == false) {
+	if (zbluenet::LogManager::getInstance()->initLogger(log_file_main, true, zbluenet::LogLevel::DEBUG) == false) {
 		::fprintf(stderr, "init main log failed \n");
 		return 1;
 	}
@@ -45,6 +46,16 @@ int main(int argc, char *argv[])
 		::fprintf(stderr, "init action log failed \n");
 		return 1;
 	}
+
+	std::unique_ptr<zbluenet::server::TcpServer> myserver(new zbluenet::server::TcpServer("127.0.0.1", 9090, 2));
+	if (false == myserver->createServer(1024)) {
+		return 1;
+	}
+
+	if (false == myserver->start()) {
+		return 1;
+	}
+
 	
 
 	while (true) {
@@ -62,7 +73,7 @@ int main(int argc, char *argv[])
 			LOG_WARNING("zjw warn");
 			LOG_ERROR("zjw error");*/
 
-		LOG_PLAIN_BY_ID(1, "action log");
+		//LOG_PLAIN_BY_ID(1, "action log");
 	}
 
 	return 0;

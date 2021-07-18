@@ -22,7 +22,7 @@ public:
 		int i = 0;
 		while (i < 10) {
 			pthread->sleep(1000);
-			printf("thread onRun: %d\n", i);
+			//printf("thread onRun: %d\n", i);
 			i++;
 		}
 
