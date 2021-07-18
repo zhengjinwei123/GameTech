@@ -11,8 +11,10 @@
 namespace zbluenet {
 	namespace net {
 
-		class TcpSocket : public IODevice {
+		class TcpSocket  : public IODevice {
 		public:
+			using SocketId = int64_t;
+
 			TcpSocket();
 			virtual ~TcpSocket();
 
@@ -68,9 +70,6 @@ namespace zbluenet {
 			bool acceptNonblock(TcpSocket *peer);
 
 			bool setNonblock();
-
-		private:
-			ZBLUENET_NONCOPYABLE(TcpSocket);
 
 		private:
 			SOCKET fd_;

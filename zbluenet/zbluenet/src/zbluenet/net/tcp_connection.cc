@@ -1,8 +1,8 @@
 #include <zbluenet/net/tcp_connection.h>
-#include <zbluenet/net/tcp_socket.h>
 
 namespace zbluenet {
 	namespace net {
+
 		TcpConnection::TcpConnection(TcpSocket *socket, size_t read_buffer_init_size,
 			size_t read_buffer_expand_size,
 			size_t write_buffer_init_size,
@@ -22,6 +22,6 @@ namespace zbluenet {
 			error_code_ = error_code;
 		}
 
-
 	} // namespace net
+
 } // namespace zbluenet

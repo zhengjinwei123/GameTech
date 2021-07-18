@@ -1,21 +1,17 @@
 #ifndef ZBLUENET_NET_TCP_CONNECTION_H
 #define ZBLUENET_NET_TCP_CONNECTION_H
 
-#include <zbluenet/net/platform.h>
-#include <zbluenet/dynamic_buffer.h>
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/class_util.h>
+#include <zbluenet/dynamic_buffer.h>
 
-
-#include <stdint.h>
 #include <cstddef>
+#include <stdint.h>
 
 namespace zbluenet {
 	namespace net {
 
-		class TcpService;
-
-		class TcpConnection : public Noncopyable {
+		class TcpConnection  : public Noncopyable {
 		public:
 			struct Status {
 				enum type {
@@ -26,30 +22,24 @@ namespace zbluenet {
 					PENDING_ERROR,
 				};
 			};
-			typedef int64_t  SocketId; // ”…socketid allocator ∑÷≈‰µƒid
-			using SendCompleteCallback = std::function<void(TcpService *, SocketId)>;
 
-			TcpConnection(TcpSocket *socket, size_t read_buffer_init_size, 
+			TcpConnection(TcpSocket *socket, size_t read_buffer_init_size,
 				size_t read_buffer_expand_size,
 				size_t write_buffer_init_size,
 				size_t write_buffer_expand_size);
 			~TcpConnection() {}
-			TcpSocket *getSocket() { return socket_;  }
+
+			TcpSocket *getSocket() { return socket_; }
 			Status::type getStatus() const { return status_;  }
-			int getErrorCode() const { return error_code_;  }
+			int getErrorCode() const { return error_code_; }
 			DynamicBuffer &getReadBuffer() { return read_buffer_; }
-			DynamicBuffer &getWriteBuffer() { return write_buffer_;  }
+			DynamicBuffer &getWriteBuffer() { return write_buffer_; }
+
 			void setStatus(Status::type status) { status_ = status; }
 			void setError(int error_code);
 
-			const SendCompleteCallback &getSendCompleteCallback() const {
-				return send_complete_cb_;
-			}
-			void setSendCompleteCallback(
-				const SendCompleteCallback &send_complete_cb)
-			{
-				send_complete_cb_ = send_complete_cb;
-			}
+			void setReactorId(uint16_t reactor_id) { reactor_id_ = reactor_id;  }
+			const uint16_t getReactorId() const { return reactor_id_; }
 
 		private:
 			TcpSocket *socket_;
@@ -57,7 +47,8 @@ namespace zbluenet {
 			int error_code_;
 			DynamicBuffer read_buffer_;
 			DynamicBuffer write_buffer_;
-			SendCompleteCallback send_complete_cb_;
+
+			uint16_t reactor_id_;
 		};
 
 	} // namespace net
