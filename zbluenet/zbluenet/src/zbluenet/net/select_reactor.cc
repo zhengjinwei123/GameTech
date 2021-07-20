@@ -2,7 +2,7 @@
 
 namespace zbluenet {
 	namespace net {
-		void SelectReactor::loop()
+		void SelectReactor::loop(Thread *pthread)
 		{
 			quit_ = false;
 

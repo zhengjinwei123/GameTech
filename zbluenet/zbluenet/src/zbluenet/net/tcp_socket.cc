@@ -22,7 +22,7 @@ namespace zbluenet {
 
 		TcpSocket::~TcpSocket()
 		{
-
+			close();
 		}
 
 		bool TcpSocket::open(SocketAddress::Protocol::type protocol)

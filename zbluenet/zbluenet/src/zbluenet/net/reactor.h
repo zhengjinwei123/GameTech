@@ -13,98 +13,67 @@
 #include <unordered_map>
 
 namespace zbluenet {
+
 	namespace net {
+
+		class SocketAddress;
 
 		class Reactor : public Noncopyable {
 		public:
-			using TcpSocketMap = std::unordered_map<TcpSocket::SocketId, TcpSocket *>;
-			using TcpConnectionMap = std::unordered_map<TcpSocket::SocketId, TcpConnection *>;
+			using SocketId = TcpSocket::SocketId;
+			using RecvMessageCallback = std::function<void (Reactor *, SocketId, DynamicBuffer *)>;
+			using PeerCloseCallback = std::function<void (Reactor *, SocketId)>;
+			using ErrorCallback = std::function<void (Reactor *, SocketId, int)>;
+			using SendCompleteCallback = std::function<void(Reactor *, SocketId)>;
 
 		public:
-			Reactor(int max_connection_num) : quit_(false), 
-				id_(0), 
-				max_connection_num_(max_connection_num),
-				conn_read_buffer_init_size_(0),
-				conn_read_buffer_expand_size_(0),
-				conn_read_buffer_max_size_(0),
-				conn_write_buffer_init_size_(0),
-				conn_write_buffer_expand_size_(0),
-				conn_write_buffer_max_size_(0)
-			{
+			using TcpSocketMap = std::unordered_map<SocketId, TcpSocket *>;
+			using TcpConnectionMap = std::unordered_map<SocketId, TcpConnection *>;
+
+		public:
+			Reactor(int max_connection_num);
+			virtual ~Reactor();
+			void setRecvBufferInitSize(size_t size);
+			void setRecvBufferExpandSize(size_t size);
+			void setRecvBufferMaxSize(size_t size);
+			////
+			void setSendBufferInitSize(size_t size);
+			void setSendBufferExpandSize(size_t size);
+			void setSendBufferMaxSize(size_t size);
+
+			void init(uint16_t id);
+
 	
-			}
 
-			virtual ~Reactor() {
-				quit();
-			}
-
-			void init(uint16_t id, size_t conn_read_buffer_init_size,
-				size_t conn_read_buffer_expand_size, size_t conn_read_buffer_max_size,
-				size_t conn_write_buffer_init_size, size_t conn_write_buffer_expand_size,
-				size_t conn_write_buffer_max_size)
-			{
-				id_ = id;
-
-				conn_read_buffer_init_size_ = conn_read_buffer_init_size;
-				conn_read_buffer_expand_size_ = conn_read_buffer_expand_size;
-				conn_read_buffer_max_size_ = conn_read_buffer_max_size;
-
-				conn_write_buffer_init_size_ = conn_write_buffer_init_size;
-				conn_write_buffer_expand_size_ = conn_write_buffer_expand_size;
-				conn_write_buffer_max_size_ = conn_write_buffer_max_size;
-			}
-
-			bool attachSocket(std::unique_ptr<TcpSocket> &peer_socket)
-			{
-				if (sockets_.find(peer_socket->getId()) != sockets_.end()) {
-					return false;
-				}
-
-				peer_socket->setReadCallback(std::bind(&Reactor::onSocketRead, this, std::placeholders::_1));
-				peer_socket->setErrorCallback(std::bind(&Reactor::onSocketError, this, std::placeholders::_1));
-				
-				// create connection
-				std::unique_ptr<TcpConnection> connection(new TcpConnection(peer_socket.get(),
-					conn_read_buffer_init_size_, conn_read_buffer_expand_size_,
-					conn_write_buffer_init_size_, conn_write_buffer_expand_size_));
-				connection->setStatus(TcpConnection::Status::CONNECTED);
-
-				auto socket_id = peer_socket->getId();
-				sockets_.insert(std::make_pair(peer_socket->getId(), peer_socket.get()));
-				peer_socket.release();
-
-				connections_.insert(std::make_pair(socket_id, connection.get()));
-				connection.release();
-
-				return true;
-			}
-
-			void start()
-			{
-				quit_ = false;
-				thread_.start(nullptr, std::bind(&Reactor::loop, this, std::placeholders::_1));
-			}
+			void start();
 
 			const size_t getConnectionNum() const { return connections_.size();  }
 
 			virtual void loop(Thread *pthread) = 0;
-			virtual void quit() 
-			{ 
-				quit_ = true; 
-				thread_.close();
-			}
+			virtual void quit();
+
+		public:
+			void setRecvMessageCallback(const RecvMessageCallback &recv_message_cb);
+			void setPeerCloseCallback(const PeerCloseCallback &peer_close_cb);
+			void setErrorCallback(const ErrorCallback &error_cb);
+
+			bool isConnected(SocketId socket_id);
+			bool getLocalAddress(SocketId socket_id, SocketAddress *addr) const;
+			bool getPeerAddress(SocketId socket_id, SocketAddress *addr) const;
+
+			bool sendMessage(SocketId socket_id, const char *buffer, size_t size, const SendCompleteCallback &send_complete_cb = nullptr);
+			bool sendMessageThenClose(SocketId socket_id, const char *buffer, size_t size);
+			void broadcastMessage(const char *buffer, size_t size);
+			// 解绑
+			void closeSocket(SocketId socket_id);
+			// 绑定socket
+			bool attachSocket(std::unique_ptr<TcpSocket> &peer_socket);
+
 
 		protected:
-			void onSocketRead(IODevice *io_device)
-			{
-
-			}
-
-			void onSocketError(IODevice *io_device)
-			{
-
-			}
-			
+			void onSocketRead(IODevice *io_device);// 消息到来
+			void onSocketWrite(IODevice *io_device); // 消息发送
+			void onSocketError(IODevice *io_device); // 出错处理
 
 		protected:
 			bool quit_;
@@ -123,6 +92,10 @@ namespace zbluenet {
 			TcpConnectionMap connections_;
 
 			Thread thread_;
+
+			RecvMessageCallback recv_message_cb_;
+			PeerCloseCallback peer_close_cb_;
+			ErrorCallback error_cb_;
 		};
 	} // namespace net 
 } // namespace zbluenet

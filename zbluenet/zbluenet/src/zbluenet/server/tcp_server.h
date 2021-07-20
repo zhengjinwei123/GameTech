@@ -4,6 +4,8 @@
 #include <string>
 #include <stdint.h>
 #include <functional>
+#include <vector>
+
 #include <zbluenet/net/socket_address.h>
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/net/acceptor.h>
@@ -13,14 +15,24 @@
 
 namespace zbluenet {
 
+	namespace exchange {
+		class BaseStruct;
+	}
+
 	using net::SocketAddress;
 	using net::TcpSocket;
 	using net::Acceptor;
+	using net::Reactor;
 	using net::TcpConnection;
 
 	namespace server {
 
 		class TcpServer {
+		public:
+			using ReactorVector = std::vector<Reactor *>;
+			using CreateMessageFunc = std::function<zbluenet::exchange::BaseStruct *(int)>;
+		
+
 		public:
 			TcpServer(const std::string &host, uint16_t port, uint8_t reactor_num);
 			virtual ~TcpServer();
@@ -37,6 +49,7 @@ namespace zbluenet {
 			uint8_t reactor_num_; // 反应器线程数量
 			Acceptor *net_acceptor_;
 			int max_connection_num_;
+			ReactorVector reactors_;
 		};
 	} // namespace server
 } // namespace zbluenet

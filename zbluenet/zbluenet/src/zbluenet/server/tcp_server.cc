@@ -4,10 +4,13 @@
 #include <zbluenet/log.h>
 #include <zbluenet/net/select_acceptor.h>
 #include <zbluenet/net/network.h>
+#include <zbluenet/net/select_reactor.h>
 
 #include <functional>
 
 namespace zbluenet {
+
+	using net::SelectReactor;
 
 	namespace server {
 
@@ -15,12 +18,17 @@ namespace zbluenet {
 			listen_addr_(host, port),
 			reactor_num_(reactor_num)
 		{
+			// 初始化win32 网络环境
 			net::NetWork::Init();
 		}
 
 		TcpServer::~TcpServer()
 		{
-
+			for (size_t i = 0 ; i < reactors_.size(); ++i) {
+				if (reactors_[i] != nullptr) {
+					delete reactors_[i];
+				}
+			}
 		}
 
 		bool TcpServer::createServer(uint16_t  max_clien_num)
@@ -53,7 +61,23 @@ namespace zbluenet {
 			}
 
 			// 创建网络线程组
+			reactors_.resize(reactor_num_, nullptr);
+			for (size_t i = 0; i < reactors_.size(); ++i) {
+#ifdef _WIN32
+				reactors_[i] = new SelectReactor(int(max_connection_num_ / reactors_.size()) + 1); // 均摊用户数量
+#else
 
+#endif
+			}
+
+			// 初始化并启动reactors
+
+			// 开启主循环
+			while (true) {
+				// 处理业务逻辑
+
+				// 处理定时器业务
+			}
 
 			return true;
 		}
@@ -66,5 +90,6 @@ namespace zbluenet {
 			// 负载均衡, 分配给一个reactor
 
 		}
+
 	} // namespace server
 } // namespace zbluenet

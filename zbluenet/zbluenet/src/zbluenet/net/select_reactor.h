@@ -19,7 +19,7 @@ namespace zbluenet {
 
 			virtual ~SelectReactor() {}
 
-			void loop();
+			virtual void loop(Thread *pthread);
 
 		private:
 			FDSet fd_read_;
