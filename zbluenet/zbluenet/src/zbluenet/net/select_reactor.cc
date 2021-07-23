@@ -12,6 +12,8 @@ namespace zbluenet {
 			std::lock_guard<std::mutex> lock(mutex_);
 			new_sockets_.emplace_back(peer_socket.get());
 			peer_socket.release();
+
+			return true;
 		}
 	
 
@@ -124,7 +126,7 @@ namespace zbluenet {
 		{
 #ifdef _WIN32
 			auto pfdset = fd_read_.fdset();
-			for (int i = 0; i < pfdset->fd_count; ++i) {
+			for (size_t i = 0; i < pfdset->fd_count; ++i) {
 				auto iter = fd_to_socketId_map_.find(pfdset->fd_array[i]);
 				if (iter == fd_to_socketId_map_.end()) {
 					continue;

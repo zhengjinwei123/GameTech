@@ -23,7 +23,7 @@ namespace zbluenet {
 			using TcpSocketVector = std::vector<TcpSocket *>;
 			using FdSocketIdMap = std::unordered_map<SOCKET, TcpSocket::SocketId>;
 
-			SelectReactor(int max_connection_num) : Reactor(max_connection_num) :
+			SelectReactor(int max_connection_num) : Reactor(max_connection_num),
 				client_change_(false)
 			{
 				fd_read_.create(max_connection_num);
