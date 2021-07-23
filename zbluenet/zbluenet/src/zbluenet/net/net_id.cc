@@ -22,8 +22,12 @@ namespace zbluenet {
 
 		NetId& NetId::operator=(const NetId &other)
 		{
+			if (this == &other) {
+				return *this;
+			}
 			this->reactor_id = other.reactor_id;
 			this->socket_id = other.socket_id;
+			return *this;
 		}
 
 		bool NetId::operator==(const NetId &other) const

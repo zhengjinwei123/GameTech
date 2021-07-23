@@ -34,7 +34,7 @@ namespace zbluenet {
 
 			// 檢查長度
 			if ((int)message_length + 4 > max_packet_length_) {
-				return RetCode::ERROR;
+				return RetCode::ERR;
 			}
 
 			if (buffer->readableBytes() < (size_t)(message_length + 4)) {
@@ -44,12 +44,12 @@ namespace zbluenet {
 			// 創建消息
 			std::unique_ptr<zbluenet::exchange::BaseStruct> message(create_message_func_(message_id));
 			if (message.get() == nullptr) {
-				return RetCode.ERROR;
+				return RetCode::ERR;
 			}
 
 			// 解包
 			if  (message->decode(buffer->readBegin() + 4, message_length) < 0) {
-				return RetCode::ERROR;
+				return RetCode::ERR;
 			}
 
 			buffer->read(message_length + 4);

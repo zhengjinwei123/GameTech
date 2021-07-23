@@ -1,11 +1,10 @@
 #ifndef ZBLUENET_NET_REACTOR_H
 #define ZBLUENET_NET_REACTOR_H
 
-#include <zbluenet/class_util.h>
 #include <zbluenet/net/tcp_connection.h>
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/net/io_device.h>
-#include <zbluenet/thread.h>
+#include <zbluenet/net/io_service.h>
 
 #include <stdint.h>
 #include <memory>
@@ -18,17 +17,20 @@ namespace zbluenet {
 
 		class SocketAddress;
 
-		class Reactor : public Noncopyable {
+		class Reactor : public IOService {
 		public:
 			using SocketId = TcpSocket::SocketId;
 			using RecvMessageCallback = std::function<void (Reactor *, SocketId, DynamicBuffer *)>;
 			using PeerCloseCallback = std::function<void (Reactor *, SocketId)>;
 			using ErrorCallback = std::function<void (Reactor *, SocketId, int)>;
 			using SendCompleteCallback = std::function<void(Reactor *, SocketId)>;
+			using WriteMessageCallback = std::function<void()>;
 
 		public:
 			using TcpSocketMap = std::unordered_map<SocketId, TcpSocket *>;
 			using TcpConnectionMap = std::unordered_map<SocketId, TcpConnection *>;
+			using SocketId_TimerId_Map = std::unordered_map<SocketId, TimerId>;
+			using TimerId_SocketId_Map = std::unordered_map<TimerId, SocketId>;
 
 		public:
 			Reactor(int max_connection_num);
@@ -41,21 +43,19 @@ namespace zbluenet {
 			void setSendBufferExpandSize(size_t size);
 			void setSendBufferMaxSize(size_t size);
 
-			void init(uint16_t id);
+			const size_t getConnectionNum() const { return connections_.size();  }
 
-	
+			void init(uint16_t id);
 
 			void start();
 
-			const size_t getConnectionNum() const { return connections_.size();  }
-
-			virtual void loop(Thread *pthread) = 0;
-			virtual void quit();
+			void loop() {}
 
 		public:
 			void setRecvMessageCallback(const RecvMessageCallback &recv_message_cb);
 			void setPeerCloseCallback(const PeerCloseCallback &peer_close_cb);
 			void setErrorCallback(const ErrorCallback &error_cb);
+			void setWriteMessageCallback(const WriteMessageCallback &write_message_cb);
 
 			bool isConnected(SocketId socket_id);
 			bool getLocalAddress(SocketId socket_id, SocketAddress *addr) const;
@@ -65,15 +65,25 @@ namespace zbluenet {
 			bool sendMessageThenClose(SocketId socket_id, const char *buffer, size_t size);
 			void broadcastMessage(const char *buffer, size_t size);
 			// 解绑
-			void closeSocket(SocketId socket_id);
+			virtual void closeSocket(SocketId socket_id);
 			// 绑定socket
-			bool attachSocket(std::unique_ptr<TcpSocket> &peer_socket);
+			virtual bool attachSocket(std::unique_ptr<TcpSocket> &peer_socket);
 
 
 		protected:
 			void onSocketRead(IODevice *io_device);// 消息到来
 			void onSocketWrite(IODevice *io_device); // 消息发送
 			void onSocketError(IODevice *io_device); // 出错处理
+
+		private:
+			bool sendMessage(TcpConnection *connection, const char *buffer, size_t size, const SendCompleteCallback &send_complete_cb);
+	
+			void addSocketTimer(SocketId socket_id, int timeout_ms,
+				TimerCallback timer_cb);
+			void removeSocketTimer(SocketId socket_id);
+
+			void onSendMessageError(TimerId timer_id);
+			void sendCompleteCloseCallback(Reactor *reactor, SocketId socket_id);
 
 		protected:
 			bool quit_;
@@ -90,12 +100,13 @@ namespace zbluenet {
 
 			TcpSocketMap sockets_;
 			TcpConnectionMap connections_;
-
-			Thread thread_;
+			SocketId_TimerId_Map socket_to_timer_map_;
+			TimerId_SocketId_Map timer_to_socket_map_;
 
 			RecvMessageCallback recv_message_cb_;
 			PeerCloseCallback peer_close_cb_;
 			ErrorCallback error_cb_;
+			WriteMessageCallback write_message_cb_;
 		};
 	} // namespace net 
 } // namespace zbluenet

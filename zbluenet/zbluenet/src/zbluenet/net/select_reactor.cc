@@ -1,14 +1,183 @@
 #include <zbluenet/net/select_reactor.h>
+#include <zbluenet/log.h>
+#include <zbluenet/thread.h>
+
+
 
 namespace zbluenet {
 	namespace net {
-		void SelectReactor::loop(Thread *pthread)
+
+		bool SelectReactor::attachSocket(std::unique_ptr<TcpSocket> &peer_socket)
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			new_sockets_.emplace_back(peer_socket.get());
+			peer_socket.release();
+		}
+	
+
+		void SelectReactor::closeSocket(SocketId socket_id)
+		{
+			auto iter = sockets_.find(socket_id);
+			if (iter != sockets_.end()) {
+				fd_to_socketId_map_.erase(iter->second->GetFD());
+			}
+			Reactor::closeSocket(socket_id);
+		}
+
+		void SelectReactor::loop()
 		{
 			quit_ = false;
-
 			while (!quit_) {
+				/*Thread::sleep(100);
+				LOG_MESSAGE_DEBUG("SelectReactor::loop:  %d", Thread::getId());*/
 
+				if (!new_sockets_.empty()) {
+					std::lock_guard<std::mutex> lock(mutex_);
+					for (auto newSock : new_sockets_) {
+						std::unique_ptr<TcpSocket> peer_socket(newSock);
+						Reactor::attachSocket(peer_socket);
+						fd_to_socketId_map_.insert(std::make_pair(peer_socket->GetFD(), peer_socket->getId()));
+					}
+
+					new_sockets_.clear();
+					client_change_ = true;
+				}
+
+				// 没有连接
+				if (connections_.empty()) {
+					continue;
+				}
+
+				// 玩家心跳检测
+				heartCheck();
+
+				// 网络事件处理
+				if (false == doNetEvent()) {
+					quit_ = true;
+				}
 			}
+
+			LOG_MESSAGE_DEBUG("SelectReactor::loop:  thread[%d] exit", Thread::getId());
+		}
+
+		void SelectReactor::heartCheck()
+		{
+
+		}
+
+		bool SelectReactor::doNetEvent()
+		{
+			if (client_change_) {
+				client_change_ = false;
+				fd_read_.zero();
+				// 将描述符 加入集合
+				max_sock_ = sockets_.begin()->second->GetFD();
+				for (auto iter  : sockets_) {
+					fd_read_.add(iter.second->GetFD());
+
+					if (max_sock_ < iter.second->GetFD()) {
+						max_sock_ = iter.second->GetFD();
+					}
+				}
+				fd_read_back_.copy(fd_read_);
+			} else {
+				fd_read_.copy(fd_read_back_);
+			}
+
+			// 计算可写集合
+			bool need_write = false;
+			fd_write_.zero();
+			for (auto iter : connections_) {
+				if (iter.second->getWriteBuffer().readableBytes() > 0) {
+					need_write = true;
+					fd_write_.add(iter.second->getSocket()->GetFD());
+				}
+			}
+
+			timeval dt = { 0, 1 };
+			int ret = 0;
+			if (need_write) {
+				ret = select(max_sock_ + 1, fd_read_.fdset(), fd_write_.fdset(), nullptr, &dt);
+			} else {
+				ret = select(max_sock_ + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
+			}
+
+			if (ret <0) {
+				if (errno == EINTR) {
+					return true;
+				}
+				LOG_MESSAGE_ERROR("SelectReactor::doNetEvent error");
+				return false;
+			}
+			else if (ret == 0) {
+				return true;
+			}
+
+			this->doReadEvent();
+
+			this->doWriteEvent();
+
+			return true;
+		}
+
+		void SelectReactor::doReadEvent()
+		{
+#ifdef _WIN32
+			auto pfdset = fd_read_.fdset();
+			for (int i = 0; i < pfdset->fd_count; ++i) {
+				auto iter = fd_to_socketId_map_.find(pfdset->fd_array[i]);
+				if (iter == fd_to_socketId_map_.end()) {
+					continue;
+				}
+				auto iter_socket = sockets_.find(iter->second);
+				if (iter_socket == sockets_.end()) {
+					continue;
+				}
+				if (iter_socket->second->getReadCallback()) {
+					iter_socket->second->getReadCallback()(iter_socket->second);
+				}
+			}
+#else
+			for (auto iter = sockets_.begin(); iter != sockets_.end();++iter) {
+				if (fd_read_.has(iter->second->GetFD())) {
+					if (iter->second->getReadCallback()) {
+						iter->second->getReadCallback()(iter->second);
+					}
+				}
+			}
+#endif
+		}
+
+		void SelectReactor::doWriteEvent()
+		{
+			if (write_message_cb_) {
+				write_message_cb_();
+			}
+
+//#ifdef _WIN32
+//			auto pfdset = fd_write_.fdset();
+//			for (int i = 0; i < pfdset->fd_count; ++i) {
+//				auto iter = fd_to_socketId_map_.find(pfdset->fd_array[i]);
+//				if (iter == fd_to_socketId_map_.end()) {
+//					continue;
+//				}
+//				auto iter_socket = sockets_.find(iter->second);
+//				if (iter_socket == sockets_.end()) {
+//					continue;
+//				}
+//				if (iter_socket->second->getWriteCallback()) {
+//					iter_socket->second->getWriteCallback()(iter_socket->second);
+//				}
+//		}
+//#else
+//			for (auto iter = sockets_.begin(); iter != sockets_.end(); ++iter) {
+//				if (fd_write_.has(iter->second->GetFD())) {
+//					if (iter->second->getWriteCallback()) {
+//						iter->second->getWriteCallback()(iter->second);
+//					}
+//				}
+//			}
+//#endif
 		}
 
 	} // namespace net

@@ -6,6 +6,8 @@
 #include <zbluenet/net/tcp_socket.h>
 
 #include <zbluenet/net/socket_id_allocator.h>
+#include <zbluenet/net/io_service.h>
+#include <zbluenet/log.h>
 
 #include <functional>
 #include <memory>
@@ -17,7 +19,7 @@ namespace zbluenet {
 
 	namespace net {
 
-		class Acceptor  : public Noncopyable {
+		class Acceptor  : public IOService {
 		public:
 			using NewConnectionCallback = std::function<void (std::unique_ptr<TcpSocket> &peer_socket)>;
 
@@ -44,7 +46,11 @@ namespace zbluenet {
 			virtual bool start()
 			{
 				quit_ = false;
-				thread_.start(nullptr, std::bind(&Acceptor::loop, this, std::placeholders::_1));
+
+				Acceptor *that = this;
+				thread_.start(nullptr, [that](Thread *pthread) -> void {
+					that->loop();
+				});
 				
 				return true;
 			}
@@ -55,13 +61,14 @@ namespace zbluenet {
 				thread_.close();
 			}
 
-		protected:
-			virtual void loop(Thread *pthread) = 0;
+			virtual void loop() {}
 
+		protected:
 			bool accept()
 			{
 				std::unique_ptr<TcpSocket> peer_socket(new TcpSocket());
 				if (false == listen_socket_->acceptNonblock(peer_socket.get())) {
+					LOG_MESSAGE_ERROR("TcpServer::createServer passiveOpenNonblock failed");
 					return false;
 				}
 
@@ -86,8 +93,6 @@ namespace zbluenet {
 
 			uint16_t max_socket_num_;
 		};
-
-
 	} // namespace net
 } // namespace zbluenet
 

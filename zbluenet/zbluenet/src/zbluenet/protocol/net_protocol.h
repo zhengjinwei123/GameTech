@@ -20,13 +20,13 @@ namespace zbluenet {
 			struct RetCode
 			{
 				enum type {
-					ERROR = -1,
+					ERR = -1,
 					WAITING_MORE_DATA = 0,
 					MESSAGE_READY = 1,
 				};
 			};
 
-			using CreateMessageFunc = std::function<void (zbluenet::exchange::BaseStruct * (int))>;
+			using CreateMessageFunc = std::function<zbluenet::exchange::BaseStruct * (int)>;
 
 			NetProtocol(int max_packet_length, const CreateMessageFunc &create_message_func);
 			~NetProtocol();

@@ -10,7 +10,9 @@ namespace zbluenet {
 		class BaseStruct;
 	}
 
-	namespace net {
+	using net::NetId;
+
+	namespace protocol {
 		
 		class NetCommand : public Noncopyable {
 		public:

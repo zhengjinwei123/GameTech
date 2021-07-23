@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\demo\main.cc" />
     <ClCompile Include="src\zbluenet\dynamic_buffer.cc" />
+    <ClCompile Include="src\zbluenet\exchange\base_struct.cc" />
     <ClCompile Include="src\zbluenet\log.cc" />
     <ClCompile Include="src\zbluenet\logger.cc" />
     <ClCompile Include="src\zbluenet\logger_async_sink.cc" />
@@ -29,18 +30,24 @@
     <ClCompile Include="src\zbluenet\logger_mgr.cc" />
     <ClCompile Include="src\zbluenet\logger_stderr_sink.cc" />
     <ClCompile Include="src\zbluenet\net\fd_set.cc" />
+    <ClCompile Include="src\zbluenet\net\net_id.cc" />
+    <ClCompile Include="src\zbluenet\net\net_thread.cc" />
+    <ClCompile Include="src\zbluenet\net\reactor.cc" />
     <ClCompile Include="src\zbluenet\net\select_acceptor.cc" />
     <ClCompile Include="src\zbluenet\net\select_reactor.cc" />
     <ClCompile Include="src\zbluenet\net\socket_address.cc" />
     <ClCompile Include="src\zbluenet\net\tcp_connection.cc" />
     <ClCompile Include="src\zbluenet\net\tcp_socket.cc" />
+    <ClCompile Include="src\zbluenet\protocol\net_command.cc" />
+    <ClCompile Include="src\zbluenet\protocol\net_protocol.cc" />
     <ClCompile Include="src\zbluenet\semaphore.cc" />
-    <ClCompile Include="src\zbluenet\server\tcp_server.cc" />
+    <ClCompile Include="src\zbluenet\server\tcp_service.cc" />
     <ClCompile Include="src\zbluenet\thread.cc" />
     <ClCompile Include="src\zbluenet\timer_heap.cc" />
     <ClCompile Include="src\zbluenet\timestamp.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\demo\server_app.hpp" />
     <ClInclude Include="src\demo\thread.hpp" />
     <ClInclude Include="src\demo\windows_tcp_client.hpp" />
     <ClInclude Include="src\demo\windows_tcp_server.hpp" />
@@ -48,6 +55,7 @@
     <ClInclude Include="src\zbluenet\class_util.h" />
     <ClInclude Include="src\zbluenet\concurrent_queue.h" />
     <ClInclude Include="src\zbluenet\dynamic_buffer.h" />
+    <ClInclude Include="src\zbluenet\exchange\base_struct.h" />
     <ClInclude Include="src\zbluenet\log.h" />
     <ClInclude Include="src\zbluenet\logger.h" />
     <ClInclude Include="src\zbluenet\logger_async_sink.h" />
@@ -57,6 +65,9 @@
     <ClInclude Include="src\zbluenet\logger_sink.h" />
     <ClInclude Include="src\zbluenet\logger_stderr_sink.h" />
     <ClInclude Include="src\zbluenet\net\acceptor.h" />
+    <ClInclude Include="src\zbluenet\net\io_service.h" />
+    <ClInclude Include="src\zbluenet\net\net_id.h" />
+    <ClInclude Include="src\zbluenet\net\net_thread.h" />
     <ClInclude Include="src\zbluenet\net\reactor.h" />
     <ClInclude Include="src\zbluenet\net\fd_set.h" />
     <ClInclude Include="src\zbluenet\net\io_device.h" />
@@ -69,8 +80,10 @@
     <ClInclude Include="src\zbluenet\net\tcp_connection.h" />
     <ClInclude Include="src\zbluenet\net\tcp_socket.h" />
     <ClInclude Include="src\zbluenet\object_pool.h" />
+    <ClInclude Include="src\zbluenet\protocol\net_command.h" />
+    <ClInclude Include="src\zbluenet\protocol\net_protocol.h" />
     <ClInclude Include="src\zbluenet\semaphore.h" />
-    <ClInclude Include="src\zbluenet\server\tcp_server.h" />
+    <ClInclude Include="src\zbluenet\server\tcp_service.h" />
     <ClInclude Include="src\zbluenet\thread.h" />
     <ClInclude Include="src\zbluenet\timer.h" />
     <ClInclude Include="src\zbluenet\timer_heap.h" />

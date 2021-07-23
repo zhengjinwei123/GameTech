@@ -4,7 +4,7 @@
 #include <zbluenet/exchange/base_struct.h>
 
 namespace zbluenet {
-	namespace net {
+	namespace protocol {
 
 		NetCommand::NetCommand(Type::type typ) :
 			type(typ),

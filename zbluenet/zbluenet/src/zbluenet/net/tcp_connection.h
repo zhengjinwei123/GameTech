@@ -11,6 +11,8 @@
 namespace zbluenet {
 	namespace net {
 
+		class Reactor;
+
 		class TcpConnection  : public Noncopyable {
 		public:
 			struct Status {
@@ -22,6 +24,8 @@ namespace zbluenet {
 					PENDING_ERROR,
 				};
 			};
+
+			using SendCompleteCallback = std::function<void(Reactor *, TcpSocket::SocketId)>;
 
 			TcpConnection(TcpSocket *socket, size_t read_buffer_init_size,
 				size_t read_buffer_expand_size,
@@ -41,6 +45,9 @@ namespace zbluenet {
 			void setReactorId(uint16_t reactor_id) { reactor_id_ = reactor_id;  }
 			const uint16_t getReactorId() const { return reactor_id_; }
 
+			const SendCompleteCallback &getSendCompleteCallback() const { return send_complete_cb_;  }
+			void setSendCompleteCallback(const SendCompleteCallback send_complete_cb) { send_complete_cb_ = send_complete_cb;  }
+
 		private:
 			TcpSocket *socket_;
 			Status::type status_;
@@ -49,6 +56,8 @@ namespace zbluenet {
 			DynamicBuffer write_buffer_;
 
 			uint16_t reactor_id_;
+
+			SendCompleteCallback send_complete_cb_;
 		};
 
 	} // namespace net

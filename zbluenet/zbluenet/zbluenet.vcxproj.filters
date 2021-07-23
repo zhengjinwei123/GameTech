@@ -16,6 +16,12 @@
     <Filter Include="头文件\net">
       <UniqueIdentifier>{b39e1c2b-c3c7-4b5f-8f47-1803eed248ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\exchange">
+      <UniqueIdentifier>{b8bbdfae-1428-4f5a-8ebb-be5d49e3da4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\protocol">
+      <UniqueIdentifier>{f97ac96a-aa09-41b7-9e9e-0116b05c7f8a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="头文件\server">
       <UniqueIdentifier>{97fc21ac-2e94-4dd7-918e-0c7429109ed0}</UniqueIdentifier>
     </Filter>
@@ -69,9 +75,6 @@
     <ClCompile Include="src\zbluenet\net\tcp_socket.cc">
       <Filter>头文件\net</Filter>
     </ClCompile>
-    <ClCompile Include="src\zbluenet\server\tcp_server.cc">
-      <Filter>头文件\server</Filter>
-    </ClCompile>
     <ClCompile Include="src\zbluenet\net\select_acceptor.cc">
       <Filter>头文件\net</Filter>
     </ClCompile>
@@ -80,6 +83,27 @@
     </ClCompile>
     <ClCompile Include="src\zbluenet\net\select_reactor.cc">
       <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\exchange\base_struct.cc">
+      <Filter>头文件\exchange</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\net_id.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\protocol\net_command.cc">
+      <Filter>头文件\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\protocol\net_protocol.cc">
+      <Filter>头文件\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\net_thread.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\reactor.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\server\tcp_service.cc">
+      <Filter>头文件\server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,9 +194,6 @@
     <ClInclude Include="src\zbluenet\net\socket_id_allocator.h">
       <Filter>头文件\net</Filter>
     </ClInclude>
-    <ClInclude Include="src\zbluenet\server\tcp_server.h">
-      <Filter>头文件\server</Filter>
-    </ClInclude>
     <ClInclude Include="src\zbluenet\net\acceptor.h">
       <Filter>头文件\net</Filter>
     </ClInclude>
@@ -190,6 +211,30 @@
     </ClInclude>
     <ClInclude Include="src\zbluenet\net\select_reactor.h">
       <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\exchange\base_struct.h">
+      <Filter>头文件\exchange</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\net_id.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\protocol\net_command.h">
+      <Filter>头文件\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\protocol\net_protocol.h">
+      <Filter>头文件\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\net_thread.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\io_service.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\demo\server_app.hpp">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\server\tcp_service.h">
+      <Filter>头文件\server</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

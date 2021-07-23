@@ -16,9 +16,9 @@ namespace zbluenet {
 
 		}
 
-		void SelectAcceptor::loop(Thread *pthread)
+		void SelectAcceptor::loop()
 		{
-			while (!quit_ && pthread->isRun()) {
+			while (!quit_) {
 				fd_read_.zero();
 
 				fd_read_.add(listen_socket_->GetFD());
@@ -30,7 +30,6 @@ namespace zbluenet {
 						continue;
 					}
 					quit_ = true;
-					pthread->exit();
 					break;
 				}
 

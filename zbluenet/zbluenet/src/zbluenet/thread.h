@@ -12,6 +12,7 @@ namespace zbluenet {
 		~Thread();
 
 		static void sleep(time_t deltaTime);
+		static std::thread::id getId();
 
 		void start(EventCallback on_create = nullptr, EventCallback on_run = nullptr, EventCallback on_destroy = nullptr);
 		void close();

@@ -18,6 +18,11 @@ namespace zbluenet {
 		std::this_thread::sleep_for(t);
 	}
 
+	std::thread::id Thread::getId()
+	{
+		return std::this_thread::get_id();
+	}
+
 	void Thread::start(EventCallback on_create, EventCallback on_run, EventCallback on_destroy)
 	{
 		std::lock_guard<std::mutex> lock(mutex_);

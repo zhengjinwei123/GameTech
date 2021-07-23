@@ -128,7 +128,7 @@ namespace zbluenet {
 		return true;
 	}
 
-	void logNetMessage(const char *fmt, ...)
+	void logNetMessage(zbluenet::LogLevel::type log_level, const char *fmt, ...)
 	{
 		Timestamp now;
 		char time_buffer[512];
@@ -143,7 +143,7 @@ namespace zbluenet {
 
 		va_list args;
 		va_start(args, fmt);
-		zbluenet::LoggerMgr::getInstance()->plainLog(0, zbluenet::LogLevel::INFO, wrap_format, args);
+		zbluenet::LoggerMgr::getInstance()->plainLog(zbluenet::LogManager::LoggerType::NET, log_level, wrap_format, args);
 		va_end(args);
 	}
 }

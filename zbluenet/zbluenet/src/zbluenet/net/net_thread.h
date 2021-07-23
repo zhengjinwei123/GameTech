@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <memory>
+#include <set>
 
 #include <zbluenet/concurrent_queue.h>
 #include <zbluenet/net/tcp_socket.h>
@@ -20,6 +21,7 @@ namespace zbluenet {
 	}
 
 	using protocol::NetProtocol;
+	using protocol::NetCommand;
 
 	namespace net {
 
@@ -28,21 +30,39 @@ namespace zbluenet {
 
 		class NetThread {
 		public:
-			using CreateMessageFunc = std::function<void (zbluenet::exchange::BaseStruct * (int))>; // 创建消息实体的接口
-			using NewNetCommandCallback = std::function<void(std::unique_ptr<NetCommand> &)>; // 接收消息的回调函数, 主线程传递进来的
+			using CreateMessageFunc = std::function<zbluenet::exchange::BaseStruct * (int)>; // 创建消息实体的接口
+			using NewNetCommandCallback = std::function<void (std::unique_ptr<NetCommand> &)>; // 接收消息的回调函数, 主线程传递进来的
 			using NetCommandQueue = ConcurrentQueue<NetCommand *>; // 发送消息的队列
+			using BroadcastList = std::set<TcpSocket::SocketId>;
+
+			using RecvMessageCallback = std::function< void (NetThread *, TcpSocket::SocketId, DynamicBuffer *)>;
 
 			NetThread( int max_recv_packet_lenth, int max_send_packet_length, const CreateMessageFunc &create_message_func);
 			~NetThread();
 
-			bool init(int id, int max_client_num, int max_recv_buffer_size, int max_send_buffer_size, const NewNetCommandCallback &new_net_cmd_cb);
+			bool init(int id,
+				int max_client_num,
+				int max_recv_buffer_size,
+				int max_send_buffer_size,
+				const NewNetCommandCallback &new_net_cmd_cb,
+				const RecvMessageCallback &recv_message_cb);
 
-			void start();
+			void start(); // 启动线程
 			void push(NetCommand *cmd); // 接收来自主线程发送来的消息
-			void attach(std::unique_ptr<TcpSocket> &peer_socket); // 新连接到来
+			void attach(std::unique_ptr<TcpSocket> &peer_socket); // 主线程告诉 新连接到来
+
+			const size_t getConnectionNum() const { return reactor_->getConnectionNum(); }
 
 		private:
 			void closeSocket(TcpSocket::SocketId socket_id);
+			void sendNetCommandClose(TcpSocket::SocketId socket_id);
+
+			void onRecvMessage(Reactor *reactor, TcpSocket::SocketId socket_id, DynamicBuffer *buffer);
+			void onPeerClose(Reactor *reactor, TcpSocket::SocketId socket_id);
+			void onError(Reactor *reactor, TcpSocket::SocketId socket_id, int error);
+			void onNetCommand();
+
+			void quit();
 
 
 		private:
@@ -53,6 +73,8 @@ namespace zbluenet {
 			NetProtocol net_protocol_; // 消息解析
 			DynamicBuffer encode_buffer_; // 消息编码
 			NewNetCommandCallback new_net_cmd_cb_; // 接收消息的，主进程传递进来， 消息接收后放到主进程的消息队列里
+			BroadcastList broadcast_list_;
+			RecvMessageCallback recv_message_cb_; // 消息到了的回调函数， 外部自己解包
 		};
 
 	} // namespace net
