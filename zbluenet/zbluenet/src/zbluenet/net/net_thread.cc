@@ -76,6 +76,11 @@ namespace zbluenet {
 			});
 		}
 
+		void NetThread::stop()
+		{
+			thread_.close();
+		}
+
 		void NetThread::push(NetCommand *cmd) // 接收来自主线程发送来的消息
 		{
 			command_queue_.push(cmd);

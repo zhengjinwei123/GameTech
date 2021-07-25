@@ -2,6 +2,9 @@
 #include <zbluenet/net/net_thread.h>
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/dynamic_buffer.h>
+#include <zbluenet/protocol/net_command.h>
+#include <zbluenet/exchange/base_struct.h>
+#include <zbluenet/protocol/net_protocol.h>
 
 #include <memory>
 
@@ -17,9 +20,28 @@ public:
 
 	}
 
-	void onRecvMessage(zbluenet::net::NetThread *pthread, zbluenet::net::TcpSocket::SocketId socket_id, zbluenet::DynamicBuffer *buffer)
+	// 收到消息， 解析消息
+	void onRecvMessage(zbluenet::net::NetThread *pthread,
+		zbluenet::net::TcpSocket::SocketId socket_id, zbluenet::DynamicBuffer *buffer)
+	{
+		for (;;) {
+			int message_id = 0;
+			std::unique_ptr<zbluenet::exchange::BaseStruct> message;
+			zbluenet::protocol::NetProtocol::RetCode::type ret = ;
+
+		}
+	}
+
+	// 发送消息
+	void pushNetCommand(std::unique_ptr<zbluenet::protocol::NetCommand> &cmd)
 	{
 
+	}
+
+	// 创建消息映射
+	zbluenet::exchange::BaseStruct * create(int id)
+	{
+		return nullptr;
 	}
 
 	void start()
@@ -39,16 +61,21 @@ public:
 			return;
 		}
 
-		std::unique_ptr<zbluenet::server::TcpService> myserver(new zbluenet::server::TcpService("127.0.0.1", 9090, 4));
-		if (false == myserver->createService(
+		std::unique_ptr<zbluenet::server::TcpService> gameServer(new zbluenet::server::TcpService("127.0.0.1", 9090, 4));
+		if (false == gameServer->createService(
 			std::bind(&ServerApp::onRecvMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
 			3000)) 
 		{
 			return;
 		}
 
-		if (false == myserver->start()) {
+		if (false == gameServer->init(
+			std::bind(&ServerApp::pushNetCommand, this, std::placeholders::_1),
+			std::bind(&ServerApp::create, this, std::placeholders::_1),
+			0)) {
 			return;
 		}
+
+		gameServer->start();
 	}
 };

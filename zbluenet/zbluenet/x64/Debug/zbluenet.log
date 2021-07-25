@@ -1,0 +1,6 @@
+﻿  main.cc
+f:\mnt2\git\gametech\zbluenet\zbluenet\src\zbluenet\server\tcp_service.h(57): error C2027: 使用了未定义类型“zbluenet::net::NetId”
+  f:\mnt2\git\gametech\zbluenet\zbluenet\src\zbluenet\server\tcp_service.h(28): note: 参见“zbluenet::net::NetId”的声明
+f:\mnt2\git\gametech\zbluenet\zbluenet\src\zbluenet\server\tcp_service.h(57): error C2065: “Hash”: 未声明的标识符
+f:\mnt2\git\gametech\zbluenet\zbluenet\src\zbluenet\server\tcp_service.h(57): error C2923: “std::unordered_map”: 对于参数“_Hasher”，“Hash”不是有效的 模板 类型变量
+  net_thread.cc
