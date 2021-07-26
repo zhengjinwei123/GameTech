@@ -255,6 +255,15 @@ namespace zbluenet {
 			return info.requst_per_second > max_request_per_second_;
 		}
 
+		TcpService::MessageHandler TcpService::getMessageHandler(int message_id) const
+		{
+
+		}
+
+		void TcpService::setMessageHandler(int message_id, const MessageHandler &message_handler)
+		{
+			message_handlers_[message_id] = message_handler;
+		}
 
 	} // namespace server
 } // namespace zbluenet

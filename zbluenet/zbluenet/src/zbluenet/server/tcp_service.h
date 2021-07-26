@@ -52,12 +52,14 @@ namespace zbluenet {
 			};
 		public:
 			using NetThreadVector = std::vector<NetThread *>;
+			using NewNetCommandCallback = std::function<void(std::unique_ptr<NetCommand> &)>;
 			using CreateMessageFunc = std::function<zbluenet::exchange::BaseStruct *(int)>;
-			using RecvMessageCallback = std::function< void(NetThread *, TcpSocket::SocketId, DynamicBuffer *)>;
+			using RecvMessageCallback = std::function< void(NetThread *, TcpSocket::SocketId, DynamicBuffer *,
+				const NewNetCommandCallback &)>;
 			using ConnectionInfoMap = std::unordered_map<NetId, ConnectionInfo, NetId::Hash>;
 			using MessageHandler = std::function<void(const NetId &, const zbluenet::exchange::BaseStruct *)>;
 			using MessageHandlerMap = std::unordered_map<int, MessageHandler>;
-			using NewNetCommandCallback = std::function<void(std::unique_ptr<NetCommand> &)>;
+			
 		
 
 		public:

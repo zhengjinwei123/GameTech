@@ -105,6 +105,12 @@
     <ClCompile Include="src\zbluenet\server\tcp_service.cc">
       <Filter>头文件\server</Filter>
     </ClCompile>
+    <ClCompile Include="src\zbluenet\server\game_server.cc">
+      <Filter>头文件\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\server\server.cc">
+      <Filter>头文件\server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\zbluenet\timestamp.h">
@@ -234,6 +240,12 @@
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="src\zbluenet\server\tcp_service.h">
+      <Filter>头文件\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\server\game_server.h">
+      <Filter>头文件\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\server\server.h">
       <Filter>头文件\server</Filter>
     </ClInclude>
   </ItemGroup>

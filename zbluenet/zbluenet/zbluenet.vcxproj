@@ -41,6 +41,8 @@
     <ClCompile Include="src\zbluenet\protocol\net_command.cc" />
     <ClCompile Include="src\zbluenet\protocol\net_protocol.cc" />
     <ClCompile Include="src\zbluenet\semaphore.cc" />
+    <ClCompile Include="src\zbluenet\server\game_server.cc" />
+    <ClCompile Include="src\zbluenet\server\server.cc" />
     <ClCompile Include="src\zbluenet\server\tcp_service.cc" />
     <ClCompile Include="src\zbluenet\thread.cc" />
     <ClCompile Include="src\zbluenet\timer_heap.cc" />
@@ -83,6 +85,8 @@
     <ClInclude Include="src\zbluenet\protocol\net_command.h" />
     <ClInclude Include="src\zbluenet\protocol\net_protocol.h" />
     <ClInclude Include="src\zbluenet\semaphore.h" />
+    <ClInclude Include="src\zbluenet\server\game_server.h" />
+    <ClInclude Include="src\zbluenet\server\server.h" />
     <ClInclude Include="src\zbluenet\server\tcp_service.h" />
     <ClInclude Include="src\zbluenet\thread.h" />
     <ClInclude Include="src\zbluenet\timer.h" />

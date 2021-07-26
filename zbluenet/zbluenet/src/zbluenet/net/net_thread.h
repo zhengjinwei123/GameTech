@@ -35,7 +35,7 @@ namespace zbluenet {
 			using NetCommandQueue = ConcurrentQueue<NetCommand *>; // 发送消息的队列
 			using BroadcastList = std::set<TcpSocket::SocketId>;
 
-			using RecvMessageCallback = std::function< void (NetThread *, TcpSocket::SocketId, DynamicBuffer *)>;
+			using RecvMessageCallback = std::function< void (NetThread *, TcpSocket::SocketId, DynamicBuffer *, const NewNetCommandCallback &)>;
 
 			NetThread( int max_recv_packet_lenth, int max_send_packet_length, const CreateMessageFunc &create_message_func);
 			~NetThread();
@@ -53,9 +53,11 @@ namespace zbluenet {
 			void attach(std::unique_ptr<TcpSocket> &peer_socket); // 主线程告诉 新连接到来
 
 			const size_t getConnectionNum() const { return reactor_->getConnectionNum(); }
-
-		private:
 			void closeSocket(TcpSocket::SocketId socket_id);
+
+			const int getId() const { return id_;  }
+		private:
+			
 			void sendNetCommandClose(TcpSocket::SocketId socket_id);
 			//void sendNetCommandNew(TcpSocket::SocketId socket_id);
 
