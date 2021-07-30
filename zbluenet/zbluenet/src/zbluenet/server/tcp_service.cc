@@ -3,6 +3,7 @@
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/log.h>
 #include <zbluenet/net/select_acceptor.h>
+#include <zbluenet/net/epoll_acceptor.h>
 #include <zbluenet/net/network.h>
 #include <zbluenet/net/net_thread.h>
 #include <zbluenet/protocol/net_command.h>
@@ -11,6 +12,7 @@
 
 #include <functional>
 #include <memory>
+#include <cstddef>
 
 namespace zbluenet {
 
@@ -46,7 +48,7 @@ namespace zbluenet {
 #ifdef _WIN32
 			net_acceptor_ = new net::SelectAcceptor(&listen_socket_, max_clien_num);
 #else
-
+			net_acceptor_ = new net::EPollAcceptor(&listen_socket_, max_clien_num);
 #endif
 			net_acceptor_->setNewConnCallback(std::bind(&TcpService::onNewConnCallback, this, std::placeholders::_1));
 
@@ -56,8 +58,7 @@ namespace zbluenet {
 			return true;
 		}
 
-		bool TcpService::init(const NewNetCommandCallback &new_net_cmd_cb, 
-			const CreateMessageFunc &create_messgae_func, int max_request_per_second)
+		bool TcpService::init(const CreateMessageFunc &create_messgae_func, int max_request_per_second)
 		{
 			if (net_acceptor_ == nullptr) {
 				return false;
@@ -76,11 +77,11 @@ namespace zbluenet {
 			// 初始化
 			for (size_t i = 0; i < net_threads_.size(); ++i) {
 				if (false == net_threads_[i]->init(
-					i,
+					int(i),
 					(max_connection_num_ % net_threads_.size()) + 1,
 					81920,
 					409600,
-					new_net_cmd_cb,
+					std::bind(&TcpService::pushClientNetCommand, this, std::placeholders::_1),
 					recv_message_cb_))
 				{
 					return false;
@@ -117,13 +118,33 @@ namespace zbluenet {
 		// 开启主循环
 		void TcpService::loop()
 		{
+			LOG_DEBUG("游戏开始处理业务");
 			zbluenet::Timestamp now;
 			while (!quit_) {
 				now.setNow();
 				// 处理业务逻辑
 
+				onClientNetCommandQueueRead();
+
 				// 处理定时器业务
 				checkTimeout(now);
+			}
+		}
+
+		void TcpService::onClientNetCommandQueueRead()
+		{
+			NetCommand *cmd_raw = nullptr;
+
+			size_t count = 0;
+
+			while (client_net_command_queue_.popIfNotEmpty(cmd_raw)) {
+
+				LOG_DEBUG("onClientNetCommandQueueRead 处理消息 %d", cmd_raw->message_id);
+
+				this->processNetCommand(cmd_raw);
+				if (++count >= 100) {
+					return;
+				}
 			}
 		}
 
@@ -257,12 +278,34 @@ namespace zbluenet {
 
 		TcpService::MessageHandler TcpService::getMessageHandler(int message_id) const
 		{
-
+			MessageHandlerMap::const_iterator iter = message_handlers_.find(message_id);
+			if (iter == message_handlers_.end()) {
+				return nullptr;
+			}
+			return iter->second;
 		}
 
 		void TcpService::setMessageHandler(int message_id, const MessageHandler &message_handler)
 		{
 			message_handlers_[message_id] = message_handler;
+		}
+
+		void TcpService::processNetCommand(const NetCommand *cmd)
+		{
+			if (NetCommand::Type::NEW == cmd->type) {
+				onConnect(cmd->id);
+			} else if (NetCommand::Type::CLOSE == cmd->type) {
+				onDisconnect(cmd->id);
+			} else if (NetCommand::Type::MESSAGE == cmd->type) {
+				onMessage(cmd->id, cmd->message_id, cmd->message);
+			}
+		}
+
+
+		void TcpService::pushClientNetCommand(std::unique_ptr<NetCommand>  &cmd)
+		{
+			client_net_command_queue_.push(cmd.get());
+			cmd.release();
 		}
 
 	} // namespace server

@@ -4,6 +4,7 @@
 #include <zbluenet/class_util.h>
 #include <zbluenet/timer_heap.h>
 #include <zbluenet/timestamp.h>
+#include <zbluenet/net/io_device.h>
 
 #include <stdint.h>
 #include <functional>
@@ -22,6 +23,16 @@ namespace zbluenet {
 
 			virtual void loop() = 0;
 			void quit() { quit_ = true;  }
+
+			virtual bool addIODevice(IODevice *io_device)
+			{
+				return true;
+			}
+
+			virtual bool removeIODevice(IODevice *io_device)
+			{
+				return true;
+			}
 
 			TimerId startTimer(int64_t timeout_ms, const TimerCallback &timer_cb, int call_times = -1)
 			{
@@ -42,8 +53,6 @@ namespace zbluenet {
 
 		protected:
 			bool quit_;
-
-		private:
 			TimerHeap timer_heap_;
 		};
 	} // namespace net

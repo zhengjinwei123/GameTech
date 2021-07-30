@@ -5,6 +5,7 @@
 #include <zbluenet/net/tcp_socket.h>
 #include <zbluenet/net/io_device.h>
 #include <zbluenet/net/io_service.h>
+#include <zbluenet/protocol/net_command.h>
 
 #include <stdint.h>
 #include <memory>
@@ -20,7 +21,9 @@ namespace zbluenet {
 		class Reactor : public IOService {
 		public:
 			using SocketId = TcpSocket::SocketId;
-			using RecvMessageCallback = std::function<void (Reactor *, SocketId, DynamicBuffer *)>;
+			using NewNetCommandCallback = std::function<void(std::unique_ptr<protocol::NetCommand> &)>;
+
+			using RecvMessageCallback = std::function<void (Reactor *, SocketId, DynamicBuffer *, const NewNetCommandCallback &new_net_cmd_cb)>;
 			using PeerCloseCallback = std::function<void (Reactor *, SocketId)>;
 			using ErrorCallback = std::function<void (Reactor *, SocketId, int)>;
 			using SendCompleteCallback = std::function<void(Reactor *, SocketId)>;
@@ -56,6 +59,7 @@ namespace zbluenet {
 			void setPeerCloseCallback(const PeerCloseCallback &peer_close_cb);
 			void setErrorCallback(const ErrorCallback &error_cb);
 			void setWriteMessageCallback(const WriteMessageCallback &write_message_cb);
+			void setNewNetCommandCallback(const NewNetCommandCallback &new_net_cmd_cb);
 
 			bool isConnected(SocketId socket_id);
 			bool getLocalAddress(SocketId socket_id, SocketAddress *addr) const;
@@ -69,9 +73,11 @@ namespace zbluenet {
 			// 绑定socket
 			virtual bool attachSocket(std::unique_ptr<TcpSocket> &peer_socket);
 
+			bool checkExists(SocketId socket_id);
+
 
 		protected:
-			void onSocketRead(IODevice *io_device);// 消息到来
+			int onSocketRead(IODevice *io_device);// 消息到来
 			void onSocketWrite(IODevice *io_device); // 消息发送
 			void onSocketError(IODevice *io_device); // 出错处理
 
@@ -107,6 +113,7 @@ namespace zbluenet {
 			PeerCloseCallback peer_close_cb_;
 			ErrorCallback error_cb_;
 			WriteMessageCallback write_message_cb_;
+			NewNetCommandCallback new_net_command_cb_;
 		};
 	} // namespace net 
 } // namespace zbluenet

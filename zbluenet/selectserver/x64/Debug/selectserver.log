@@ -1,0 +1,5 @@
+﻿  main.cc
+e:\linuxcpp\zbluenet\selectserver\main.cc(11): warning C4005: “WINSOCK_VERSION”: 宏重定义
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\um\winsock2.h(84): note: 参见“WINSOCK_VERSION”的前一个定义
+e:\linuxcpp\zbluenet\selectserver\main.cc(16): warning C4326: “main”的返回类型应为“int”而非“void”
+  selectserver.vcxproj -> E:\linuxcpp\zbluenet\x64\Debug\selectserver.exe

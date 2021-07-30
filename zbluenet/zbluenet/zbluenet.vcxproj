@@ -19,7 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\demo\c2s_login_message_handler.cc" />
+    <ClCompile Include="src\demo\c2s_message.cc" />
     <ClCompile Include="src\demo\main.cc" />
+    <ClCompile Include="src\demo\server_app.cc" />
     <ClCompile Include="src\zbluenet\dynamic_buffer.cc" />
     <ClCompile Include="src\zbluenet\exchange\base_struct.cc" />
     <ClCompile Include="src\zbluenet\log.cc" />
@@ -42,14 +45,16 @@
     <ClCompile Include="src\zbluenet\protocol\net_protocol.cc" />
     <ClCompile Include="src\zbluenet\semaphore.cc" />
     <ClCompile Include="src\zbluenet\server\game_server.cc" />
-    <ClCompile Include="src\zbluenet\server\server.cc" />
+    <ClCompile Include="src\zbluenet\server\game_service.cc" />
     <ClCompile Include="src\zbluenet\server\tcp_service.cc" />
     <ClCompile Include="src\zbluenet\thread.cc" />
     <ClCompile Include="src\zbluenet\timer_heap.cc" />
     <ClCompile Include="src\zbluenet\timestamp.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\demo\server_app.hpp" />
+    <ClInclude Include="src\demo\c2s_login_message_handler.h" />
+    <ClInclude Include="src\demo\c2s_message.h" />
+    <ClInclude Include="src\demo\server_app.h" />
     <ClInclude Include="src\demo\thread.hpp" />
     <ClInclude Include="src\demo\windows_tcp_client.hpp" />
     <ClInclude Include="src\demo\windows_tcp_server.hpp" />
@@ -58,6 +63,7 @@
     <ClInclude Include="src\zbluenet\concurrent_queue.h" />
     <ClInclude Include="src\zbluenet\dynamic_buffer.h" />
     <ClInclude Include="src\zbluenet\exchange\base_struct.h" />
+    <ClInclude Include="src\zbluenet\exchange\macro.h" />
     <ClInclude Include="src\zbluenet\log.h" />
     <ClInclude Include="src\zbluenet\logger.h" />
     <ClInclude Include="src\zbluenet\logger_async_sink.h" />
@@ -68,6 +74,7 @@
     <ClInclude Include="src\zbluenet\logger_stderr_sink.h" />
     <ClInclude Include="src\zbluenet\net\acceptor.h" />
     <ClInclude Include="src\zbluenet\net\io_service.h" />
+    <ClInclude Include="src\zbluenet\net\message_queue.h" />
     <ClInclude Include="src\zbluenet\net\net_id.h" />
     <ClInclude Include="src\zbluenet\net\net_thread.h" />
     <ClInclude Include="src\zbluenet\net\reactor.h" />
@@ -86,7 +93,7 @@
     <ClInclude Include="src\zbluenet\protocol\net_protocol.h" />
     <ClInclude Include="src\zbluenet\semaphore.h" />
     <ClInclude Include="src\zbluenet\server\game_server.h" />
-    <ClInclude Include="src\zbluenet\server\server.h" />
+    <ClInclude Include="src\zbluenet\server\game_service.h" />
     <ClInclude Include="src\zbluenet\server\tcp_service.h" />
     <ClInclude Include="src\zbluenet\thread.h" />
     <ClInclude Include="src\zbluenet\timer.h" />
@@ -147,16 +154,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;$(IncludePath)</IncludePath>
+    <IncludePath>E:\linuxcpp\zbluenet\zbluenet\src\zbluenet;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;$(IncludePath)</IncludePath>
+    <IncludePath>E:\linuxcpp\zbluenet\zbluenet\src\zbluenet;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;$(IncludePath)</IncludePath>
+    <IncludePath>E:\linuxcpp\zbluenet\zbluenet\src\zbluenet;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;$(IncludePath)</IncludePath>
+    <IncludePath>E:\linuxcpp\zbluenet\zbluenet\src\zbluenet;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -164,7 +171,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\linuxcpp\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;ZBLUENET_BUILD_ENABLE_BASE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -177,7 +184,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\linuxcpp\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;ZBLUENET_BUILD_ENABLE_BASE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -192,7 +199,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\linuxcpp\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;ZBLUENET_BUILD_ENABLE_BASE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -209,7 +216,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\mnt2\git\GameTech\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\linuxcpp\zbluenet\zbluenet\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;ZBLUENET_BUILD_ENABLE_BASE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

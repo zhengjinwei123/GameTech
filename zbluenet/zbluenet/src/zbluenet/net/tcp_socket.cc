@@ -103,8 +103,8 @@ namespace zbluenet {
 				return false;
 			}
 
-			peer_socket->setFd(fd_);
-			if (NetWork::setCloseOnExec(fd_) == false) {
+			peer_socket->setFd(sock_fd);
+			if (NetWork::setCloseOnExec(sock_fd) == false) {
 				peer_socket->close();
 				return false;
 			}
@@ -139,6 +139,10 @@ namespace zbluenet {
 			if (::ioctlsocket(fd_, FIONREAD, &readable_bytes) == -1) {
 				return -1;
 			}
+
+			//char data[1024];
+			//int n = ::recv(fd_, data, 1, MSG_PEEK);
+
 			return static_cast<int>(readable_bytes);
 #else // LINUX
 			int readable_bytes = 0;

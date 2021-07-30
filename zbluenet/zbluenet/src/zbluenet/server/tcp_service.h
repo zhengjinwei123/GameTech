@@ -12,6 +12,8 @@
 #include <zbluenet/net/acceptor.h>
 #include <zbluenet/net/reactor.h>
 #include <zbluenet/net/tcp_connection.h>
+#include <zbluenet/net/net_id.h>
+#include <zbluenet/concurrent_queue.h>
 
 
 namespace zbluenet {
@@ -67,8 +69,7 @@ namespace zbluenet {
 			virtual ~TcpService();
 
 			bool createService(const RecvMessageCallback &recv_message_cb, uint16_t max_clien_num);
-			bool init(const NewNetCommandCallback &new_net_cmd_cb, 
-				const CreateMessageFunc &create_messgae_func, int max_request_per_second = 0);
+			bool init(const CreateMessageFunc &create_messgae_func, int max_request_per_second = 0);
 			void start();
 			void stop();
 			
@@ -86,6 +87,10 @@ namespace zbluenet {
 			MessageHandler getMessageHandler(int message_id) const;
 			void setMessageHandler(int message_id, const MessageHandler &message_handler);
 
+			void processNetCommand(const NetCommand *cmd);
+
+			void pushClientNetCommand(std::unique_ptr<NetCommand> &cmd);
+
 		private:
 			void push(std::unique_ptr<NetCommand> &cmd);
 			void loop();
@@ -93,6 +98,19 @@ namespace zbluenet {
 
 			void onMessage(const NetId &net_id, int message_id, const zbluenet::exchange::BaseStruct *message);
 			bool checkRequestFrequencyLimit(ConnectionInfo &info);
+
+			void onClientNetCommandQueueRead();
+
+		protected:
+			template <typename AnyType>
+			struct MessageHandlerWrapper {
+				void call(const NetId &net_id, const zbluenet::exchange::BaseStruct *message)
+				{
+					this->f(net_id, (AnyType *)message);
+				}
+
+				std::function<void(const NetId &, const AnyType *)> f;
+			};
 
 		private:
 			SocketAddress listen_addr_;
@@ -107,6 +125,8 @@ namespace zbluenet {
 			ConnectionInfoMap connection_infos_;
 			MessageHandlerMap message_handlers_;
 			int max_request_per_second_;
+
+			zbluenet::ConcurrentQueue<NetCommand *> client_net_command_queue_;
 		};
 	} // namespace server
 } // namespace zbluenet

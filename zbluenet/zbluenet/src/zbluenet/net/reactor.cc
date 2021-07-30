@@ -90,6 +90,11 @@ namespace zbluenet {
 
 		}
 
+		bool Reactor::checkExists(SocketId socket_id)
+		{
+			return sockets_.find(socket_id) != sockets_.end();
+		}
+
 		// 绑定socket
 		bool Reactor::attachSocket(std::unique_ptr<TcpSocket> &peer_socket)
 		{
@@ -122,14 +127,14 @@ namespace zbluenet {
 		}
 
 		 // 消息来了
-		 void Reactor::onSocketRead(IODevice *io_device)
+		 int Reactor::onSocketRead(IODevice *io_device)
 		 {
 			 TcpSocket *socket = static_cast<TcpSocket *>(io_device);
 			 SocketId socket_id = socket->getId();
 
 			 TcpConnectionMap::iterator iter = connections_.find(socket_id);
 			 if (connections_.end() == iter) {
-				 return;
+				 return -1;
 			 }
 
 			 TcpConnection *connection = iter->second;
@@ -139,7 +144,13 @@ namespace zbluenet {
 			 bool peer_close = false;
 
 			 for (;;) {
-				 int bytes_to_read = (std::max)(1, socket->readableBytes());
+
+				 int readable_bytes = socket->readableBytes();
+				 if (data_arrive && readable_bytes == 0) {
+					  break;
+				 }
+
+				 int bytes_to_read = (std::max)(1, readable_bytes);
 
 				 // 检查缓冲是否溢出
 				 if (conn_read_buffer_max_size_ > 0 &&
@@ -155,7 +166,8 @@ namespace zbluenet {
 					 read_buffer.write(ret);
 					 data_arrive = true;
 				 } else if (ret < 0) {
-					 if (EAGAIN == errno) {
+					 int errn = errno;
+					 if (EAGAIN == errn) {
 						break;
 					 }
 
@@ -163,14 +175,18 @@ namespace zbluenet {
 					 if (error_cb_) {
 						 error_cb_(this, socket_id, connection->getErrorCode());
 					 }
-					 return;
+					 return -1;
+				 }
+				 else {
+					 peer_close = true;
+					 break;
 				 }
 			 }
 
 			 // 消息来了, 回调函数处理
 			 if (data_arrive) {
 				 if (recv_message_cb_) {
-					 recv_message_cb_(this, socket_id, &read_buffer);
+					 recv_message_cb_(this, socket_id, &read_buffer, new_net_command_cb_);
 				 }
 			 }
 
@@ -178,7 +194,7 @@ namespace zbluenet {
 			 if (peer_close) {
 				 if (data_arrive) {
 					 if (connections_.find(socket_id) == connections_.end()) {
-						 return;
+						 return -1;
 					 }
 				 }
 
@@ -186,7 +202,11 @@ namespace zbluenet {
 				 if (peer_close_cb_) {
 					 peer_close_cb_(this, socket_id);
 				 }
+
+				 return -1;
 			 }
+
+			 return 0;
 		 }
 
 		 void Reactor::setRecvMessageCallback(const RecvMessageCallback &recv_message_cb)
@@ -208,6 +228,12 @@ namespace zbluenet {
 		 {
 			 write_message_cb_ = write_message_cb;
 		 }
+
+		 void Reactor::setNewNetCommandCallback(const NewNetCommandCallback &new_net_cmd_cb)
+		 {
+			 new_net_command_cb_ = new_net_cmd_cb;
+		 }
+
 		 // 出错了
 		 void Reactor::onSocketError(IODevice *io_device)
 		 {

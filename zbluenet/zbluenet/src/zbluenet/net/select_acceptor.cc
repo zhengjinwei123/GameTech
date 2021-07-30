@@ -1,6 +1,8 @@
 #include <zbluenet/net/select_acceptor.h>
 #include <zbluenet/net/platform.h>
 #include <zbluenet/log.h>
+#include <zbluenet/timestamp.h>
+#include <algorithm>
 
 namespace zbluenet {
 	namespace net {
@@ -18,13 +20,18 @@ namespace zbluenet {
 
 		void SelectAcceptor::loop()
 		{
+			Timestamp now;
 			while (!quit_) {
+				now.setNow();
+
 				fd_read_.zero();
 
 				fd_read_.add(listen_socket_->GetFD());
 
-				timeval dt = { 0, 0 };
-				int ret = select(listen_socket_->GetFD() + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
+				int timer_timeout = timer_heap_.getNextTimeoutMillisecond(now);
+				int timeout = (std::min)(timer_timeout * 1000, 30 * 60 * 1000 * 1000);
+				timeval dt = { 0, timeout };
+				int ret = select(int(listen_socket_->GetFD()) + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
 				if (ret < 0) {
 					if (errno == EINTR) {
 						continue;
@@ -36,6 +43,9 @@ namespace zbluenet {
 				if (fd_read_.has(listen_socket_->GetFD())) {
 					this->accept();
 				}
+				// ¶¨Ê±Æ÷º¯Êý
+				now.setNow();
+				checkTimeout(now);
 			}
 		}
 	} // namespace net

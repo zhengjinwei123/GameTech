@@ -59,7 +59,7 @@ namespace zbluenet {
 		private:
 			
 			void sendNetCommandClose(TcpSocket::SocketId socket_id);
-			//void sendNetCommandNew(TcpSocket::SocketId socket_id);
+			void sendNetCommandNew(TcpSocket::SocketId socket_id);
 
 			void onRecvMessage(Reactor *reactor, TcpSocket::SocketId socket_id, DynamicBuffer *buffer);
 			void onPeerClose(Reactor *reactor, TcpSocket::SocketId socket_id);

@@ -25,6 +25,9 @@
     <Filter Include="头文件\server">
       <UniqueIdentifier>{97fc21ac-2e94-4dd7-918e-0c7429109ed0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="demo">
+      <UniqueIdentifier>{6e8bdb83-5c10-4f39-810d-238a0d5e3b33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\zbluenet\timestamp.cc">
@@ -108,8 +111,17 @@
     <ClCompile Include="src\zbluenet\server\game_server.cc">
       <Filter>头文件\server</Filter>
     </ClCompile>
-    <ClCompile Include="src\zbluenet\server\server.cc">
+    <ClCompile Include="src\zbluenet\server\game_service.cc">
       <Filter>头文件\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\demo\c2s_login_message_handler.cc">
+      <Filter>demo</Filter>
+    </ClCompile>
+    <ClCompile Include="src\demo\c2s_message.cc">
+      <Filter>demo</Filter>
+    </ClCompile>
+    <ClCompile Include="src\demo\server_app.cc">
+      <Filter>demo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -236,17 +248,29 @@
     <ClInclude Include="src\zbluenet\net\io_service.h">
       <Filter>头文件\net</Filter>
     </ClInclude>
-    <ClInclude Include="src\demo\server_app.hpp">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\zbluenet\server\tcp_service.h">
       <Filter>头文件\server</Filter>
     </ClInclude>
     <ClInclude Include="src\zbluenet\server\game_server.h">
       <Filter>头文件\server</Filter>
     </ClInclude>
-    <ClInclude Include="src\zbluenet\server\server.h">
+    <ClInclude Include="src\zbluenet\net\message_queue.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\server\game_service.h">
       <Filter>头文件\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\exchange\macro.h">
+      <Filter>头文件\exchange</Filter>
+    </ClInclude>
+    <ClInclude Include="src\demo\c2s_login_message_handler.h">
+      <Filter>demo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\demo\c2s_message.h">
+      <Filter>demo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\demo\server_app.h">
+      <Filter>demo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

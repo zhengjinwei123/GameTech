@@ -1,6 +1,7 @@
 #include <zbluenet/net/net_thread.h>
 #include <zbluenet/net/select_reactor.h>
 #include <zbluenet/log.h>
+#include <zbluenet/net/epoll_reactor.h>
 
 #include <functional>
 #include <memory>
@@ -36,11 +37,15 @@ namespace zbluenet {
 #ifdef _WIN32
 			reactor_ = new SelectReactor(max_client_num);
 #else
-
+			reactor_ = new EpollReactor(max_client_num);
 #endif
 
 			reactor_->setRecvBufferMaxSize(max_recv_buffer_size);
 			reactor_->setSendBufferMaxSize(max_send_buffer_size);
+			reactor_->setRecvBufferExpandSize(1024);
+			reactor_->setSendBufferExpandSize(1024);
+			reactor_->setRecvBufferInitSize(1024);
+			reactor_->setSendBufferInitSize(1024);
 
 			// 消息回调
 			reactor_->setRecvMessageCallback(std::bind(&NetThread::onRecvMessage, this, std::placeholders::_1,
@@ -54,6 +59,8 @@ namespace zbluenet {
 			reactor_->setWriteMessageCallback([=]()-> void {
 				this->onNetCommand();
 			});
+
+			reactor_->setNewNetCommandCallback(new_net_cmd_cb);
 
 
 			// 线程id
@@ -88,7 +95,9 @@ namespace zbluenet {
 
 		void NetThread::attach(std::unique_ptr<TcpSocket> &peer_socket) // 新连接到来
 		{
+			TcpSocket::SocketId socket_id = peer_socket->getId();
 			reactor_->attachSocket(peer_socket);
+			this->sendNetCommandNew(socket_id);
 		}
 
 		void NetThread::closeSocket(TcpSocket::SocketId socket_id)
@@ -105,11 +114,19 @@ namespace zbluenet {
 			new_net_cmd_cb_(cmd);
 		}
 
+		void NetThread::sendNetCommandNew(TcpSocket::SocketId socket_id)
+		{
+			std::unique_ptr<NetCommand> cmd(new NetCommand(NetCommand::Type::NEW));
+			cmd->id.reactor_id = id_;
+			cmd->id.socket_id = socket_id;
+			new_net_cmd_cb_(cmd);
+		}
+
 		// 消息到了
 		void NetThread::onRecvMessage(Reactor *reactor, TcpSocket::SocketId socket_id, DynamicBuffer *buffer)
 		{
 			if (recv_message_cb_) {
-				recv_message_cb_(this, socket_id, buffer);
+				recv_message_cb_(this, socket_id, buffer, new_net_cmd_cb_);
 			}
 		}
 
@@ -181,5 +198,5 @@ namespace zbluenet {
 			}
 		}
 
-	} // 
+	} // namespace net
 } // namespace zbluenet

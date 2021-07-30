@@ -30,15 +30,13 @@ namespace zbluenet {
 		{
 			quit_ = false;
 			while (!quit_) {
-				/*Thread::sleep(100);
-				LOG_MESSAGE_DEBUG("SelectReactor::loop:  %d", Thread::getId());*/
-
 				if (!new_sockets_.empty()) {
 					std::lock_guard<std::mutex> lock(mutex_);
 					for (auto newSock : new_sockets_) {
 						std::unique_ptr<TcpSocket> peer_socket(newSock);
-						Reactor::attachSocket(peer_socket);
 						fd_to_socketId_map_.insert(std::make_pair(peer_socket->GetFD(), peer_socket->getId()));
+
+						Reactor::attachSocket(peer_socket);
 					}
 
 					new_sockets_.clear();
@@ -98,10 +96,16 @@ namespace zbluenet {
 
 			timeval dt = { 0, 1 };
 			int ret = 0;
+
+			int maxSock = 0;
+#ifndef _WIN32
+			maxSock = max_sock_ + 1;
+#endif
+
 			if (need_write) {
-				ret = select(max_sock_ + 1, fd_read_.fdset(), fd_write_.fdset(), nullptr, &dt);
+				ret = select(maxSock, fd_read_.fdset(), fd_write_.fdset(), nullptr, &dt);
 			} else {
-				ret = select(max_sock_ + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
+				ret = select(maxSock, fd_read_.fdset(), nullptr, nullptr, &dt);
 			}
 
 			if (ret <0) {
@@ -136,7 +140,10 @@ namespace zbluenet {
 					continue;
 				}
 				if (iter_socket->second->getReadCallback()) {
-					iter_socket->second->getReadCallback()(iter_socket->second);
+					int ret = iter_socket->second->getReadCallback()(iter_socket->second);
+					if (ret  == -1) {
+						fd_read_back_.del(pfdset->fd_array[i]);
+					}
 				}
 			}
 #else
