@@ -75,8 +75,6 @@ namespace zbluenet {
 
 			bool checkExists(SocketId socket_id);
 
-
-		protected:
 			int onSocketRead(IODevice *io_device);// 消息到来
 			void onSocketWrite(IODevice *io_device); // 消息发送
 			void onSocketError(IODevice *io_device); // 出错处理

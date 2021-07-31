@@ -9,6 +9,8 @@
 namespace zbluenet {
 	namespace net {
 
+		class IODevice;
+
 		class EPollAcceptor : public Acceptor {
 		public:
 			EPollAcceptor(TcpSocket *listen_socket, uint16_t max_socket_num = 1024);
@@ -16,6 +18,9 @@ namespace zbluenet {
 
 		protected:
 			virtual void loop();
+
+		private:
+			int onListenSocketRead(IODevice *io_device);
 
 		private:
 			Epoller epoller_;

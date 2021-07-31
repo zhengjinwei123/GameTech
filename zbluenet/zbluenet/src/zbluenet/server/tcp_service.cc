@@ -1,6 +1,7 @@
 #include <zbluenet/server/tcp_service.h>
 #include <zbluenet/net/socket_address.h>
 #include <zbluenet/net/tcp_socket.h>
+#include <zbluenet/net/io_device.h>
 #include <zbluenet/log.h>
 #include <zbluenet/net/select_acceptor.h>
 #include <zbluenet/net/epoll_acceptor.h>
@@ -13,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <cstddef>
+#include <cerrno>
 
 namespace zbluenet {
 
@@ -27,6 +29,10 @@ namespace zbluenet {
 		{
 			// 初始化win32 网络环境
 			net::NetWork::Init();
+
+#ifndef _WIN32
+			epoll_service_ = nullptr;
+#endif
 		}
 
 		TcpService::~TcpService()
@@ -36,14 +42,22 @@ namespace zbluenet {
 					delete net_threads_[i];
 				}
 			}
+
+#ifndef _WIN32
+			if (epoll_service_ != nullptr) {
+				delete epoll_service_;
+				epoll_service_ = nullptr;
+			}
+#endif
 		}
 
 		bool TcpService::createService(const RecvMessageCallback &recv_message_cb, uint16_t  max_clien_num)
 		{
 			if (false == listen_socket_.passiveOpenNonblock(listen_addr_)) {
-				LOG_MESSAGE_ERROR("TcpServer::createServer passiveOpenNonblock failed");
+				LOG_MESSAGE_ERROR("TcpServer::createService passiveOpenNonblock failed");
 				return false;
 			}
+			LOG_MESSAGE_DEBUG("create listen socket success: %s:%d", listen_addr_.getIp().c_str(), listen_addr_.getPort());
 
 #ifdef _WIN32
 			net_acceptor_ = new net::SelectAcceptor(&listen_socket_, max_clien_num);
@@ -74,11 +88,13 @@ namespace zbluenet {
 			for (size_t i = 0; i < net_threads_.size(); ++i) {
 				net_threads_[i] = new NetThread(40960, 40960, create_messgae_func);
 			}
+
+			LOG_MESSAGE_DEBUG("net_threads_ init max_connection(%d)  thread_num(%d)  per_thread_num(%d)", max_connection_num_, net_threads_.size(), (max_connection_num_ / net_threads_.size()) + 1);
 			// 初始化
 			for (size_t i = 0; i < net_threads_.size(); ++i) {
 				if (false == net_threads_[i]->init(
 					int(i),
-					(max_connection_num_ % net_threads_.size()) + 1,
+					(max_connection_num_ / net_threads_.size()) + 1,
 					81920,
 					409600,
 					std::bind(&TcpService::pushClientNetCommand, this, std::placeholders::_1),
@@ -90,6 +106,13 @@ namespace zbluenet {
 
 			max_request_per_second_ = max_request_per_second;
 
+#ifndef _WIN32
+			epoll_service_ = new EpollService(1000);
+			client_net_command_queue_.attach(*epoll_service_);
+			client_net_command_queue_.setRecvMessageCallback([=](NetCommandQueue *queue) -> void {
+				this->onClientNetCommandQueueRead(queue);
+			});
+#endif
 			return true;
 		}
 
@@ -118,7 +141,9 @@ namespace zbluenet {
 		// 开启主循环
 		void TcpService::loop()
 		{
-			LOG_DEBUG("游戏开始处理业务");
+			LOG_MESSAGE_DEBUG("server start success");
+
+#ifdef _WIN32
 			zbluenet::Timestamp now;
 			while (!quit_) {
 				now.setNow();
@@ -129,17 +154,24 @@ namespace zbluenet {
 				// 处理定时器业务
 				checkTimeout(now);
 			}
+#else
+			epoll_service_->loop();
+#endif
 		}
 
-		void TcpService::onClientNetCommandQueueRead()
+		void TcpService::onClientNetCommandQueueRead(MessageQueue<NetCommand *> *queue)
 		{
 			NetCommand *cmd_raw = nullptr;
 
 			size_t count = 0;
 
-			while (client_net_command_queue_.popIfNotEmpty(cmd_raw)) {
+#ifdef _WIN32
+			while (client_net_command_queue_.pop(cmd_raw)) {
+#else
+			while (queue->pop(cmd_raw)) {
+#endif
 
-				LOG_DEBUG("onClientNetCommandQueueRead 处理消息 %d", cmd_raw->message_id);
+				//LOG_DEBUG("onClientNetCommandQueueRead process message %d", cmd_raw->message_id);
 
 				this->processNetCommand(cmd_raw);
 				if (++count >= 100) {
@@ -159,7 +191,7 @@ namespace zbluenet {
 		{
 			SocketAddress remote_addr;
 			peer_socket->getPeerAddress(&remote_addr);
-			LOG_MESSAGE_DEBUG("新连接到了 %lld, addr: [%s:%d]", peer_socket->getId(), remote_addr.getIp().c_str(), remote_addr.getPort());
+			LOG_MESSAGE_DEBUG("new connection: %lld | %d, addr: [%s:%d]", peer_socket->getId(), peer_socket->getFD(), remote_addr.getIp().c_str(), remote_addr.getPort());
 		
 			// 负载均衡, 分配给一个reactor
 			size_t min_connection_thread_index = 0;
@@ -300,7 +332,6 @@ namespace zbluenet {
 				onMessage(cmd->id, cmd->message_id, cmd->message);
 			}
 		}
-
 
 		void TcpService::pushClientNetCommand(std::unique_ptr<NetCommand>  &cmd)
 		{

@@ -26,12 +26,12 @@ namespace zbluenet {
 
 				fd_read_.zero();
 
-				fd_read_.add(listen_socket_->GetFD());
+				fd_read_.add(listen_socket_->getFD());
 
-				int timer_timeout = timer_heap_.getNextTimeoutMillisecond(now);
-				int timeout = (std::min)(timer_timeout * 1000, 30 * 60 * 1000 * 1000);
+				int64_t timer_timeout = timer_heap_.getNextTimeoutMillisecond(now);
+				int timeout = (std::min)(int(timer_timeout) * 1000, 30 * 60 * 1000 * 1000);
 				timeval dt = { 0, timeout };
-				int ret = select(int(listen_socket_->GetFD()) + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
+				int ret = select(int(listen_socket_->getFD()) + 1, fd_read_.fdset(), nullptr, nullptr, &dt);
 				if (ret < 0) {
 					if (errno == EINTR) {
 						continue;
@@ -40,7 +40,7 @@ namespace zbluenet {
 					break;
 				}
 
-				if (fd_read_.has(listen_socket_->GetFD())) {
+				if (fd_read_.has(listen_socket_->getFD())) {
 					this->accept();
 				}
 				// ¶¨Ê±Æ÷º¯Êý

@@ -113,7 +113,7 @@ namespace zbluenet {
 			}
 
 			if (false == pGameService_->createService(std::bind(&GameServer::onRecvMessage, this, std::placeholders::_1,
-				std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), 30000)) {
+				std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), 1024)) {
 				LOG_ERROR("createService fail");
 				return false;
 			}

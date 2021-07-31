@@ -14,6 +14,8 @@
 #include <zbluenet/net/tcp_connection.h>
 #include <zbluenet/net/net_id.h>
 #include <zbluenet/concurrent_queue.h>
+#include <zbluenet/net/message_queue.h>
+#include <zbluenet/net/epoll_service.h>
 
 
 namespace zbluenet {
@@ -28,6 +30,7 @@ namespace zbluenet {
 		class NetThread;
 		class IOService;
 		class NetId;
+		class IODevice;
 	}
 
 	namespace protocol {
@@ -43,6 +46,11 @@ namespace zbluenet {
 	using protocol::NetCommand;
 	using net::IOService;
 	using net::NetId;
+	using net::IODevice;
+	using net::MessageQueue;
+#ifndef _WIN32
+	using net::EpollService;
+#endif
 
 	namespace server {
 
@@ -61,7 +69,7 @@ namespace zbluenet {
 			using ConnectionInfoMap = std::unordered_map<NetId, ConnectionInfo, NetId::Hash>;
 			using MessageHandler = std::function<void(const NetId &, const zbluenet::exchange::BaseStruct *)>;
 			using MessageHandlerMap = std::unordered_map<int, MessageHandler>;
-			
+			using NetCommandQueue = MessageQueue<NetCommand *>; // 发送消息的队列
 		
 
 		public:
@@ -99,7 +107,7 @@ namespace zbluenet {
 			void onMessage(const NetId &net_id, int message_id, const zbluenet::exchange::BaseStruct *message);
 			bool checkRequestFrequencyLimit(ConnectionInfo &info);
 
-			void onClientNetCommandQueueRead();
+			void onClientNetCommandQueueRead(NetCommandQueue *queue = nullptr);
 
 		protected:
 			template <typename AnyType>
@@ -125,8 +133,11 @@ namespace zbluenet {
 			ConnectionInfoMap connection_infos_;
 			MessageHandlerMap message_handlers_;
 			int max_request_per_second_;
+			NetCommandQueue client_net_command_queue_;
 
-			zbluenet::ConcurrentQueue<NetCommand *> client_net_command_queue_;
+#ifndef _WIN32
+			EpollService *epoll_service_;
+#endif
 		};
 	} // namespace server
 } // namespace zbluenet

@@ -16,7 +16,7 @@
 
 namespace zbluenet {
 	namespace net {
-		TcpSocket::TcpSocket() : fd_(INVALID_SOCKET)
+		TcpSocket::TcpSocket()
 		{
 		}
 
@@ -43,9 +43,9 @@ namespace zbluenet {
 			if (fd_ == INVALID_SOCKET) {
 				return false;
 			}
-
 			if (NetWork::setCloseOnExec(fd_) == false) {
 				close();
+				LOG_MESSAGE_ERROR("1111123232323");
 				return false;
 			}
 			return true;
@@ -103,7 +103,7 @@ namespace zbluenet {
 				return false;
 			}
 
-			peer_socket->setFd(sock_fd);
+			peer_socket->setFD(sock_fd);
 			if (NetWork::setCloseOnExec(sock_fd) == false) {
 				peer_socket->close();
 				return false;
@@ -286,7 +286,7 @@ namespace zbluenet {
 		bool TcpSocket::passiveOpen(const SocketAddress &local_addr)
 		{
 			if (open(local_addr.getProtocol()) == false) {
-				LOG_DEBUG("ccc");
+				LOG_MESSAGE_ERROR("11111");
 				return false;
 			}
 			if (setReuseAddr() == false ||
@@ -294,7 +294,7 @@ namespace zbluenet {
 				bind(local_addr) == false ||
 				listen(128) == false) {
 				close();
-				LOG_DEBUG("ddd");
+				LOG_MESSAGE_ERROR("1111122222");
 				return false;
 			} 
 			return true;
@@ -306,12 +306,10 @@ namespace zbluenet {
 		bool TcpSocket::passiveOpenNonblock(const SocketAddress &local_addr)
 		{
 			if (passiveOpen(local_addr) == false) {
-				LOG_DEBUG("aaaaa");
 				return false;
 			}
 			if (setNonblock() == false) {
 				close();
-				LOG_DEBUG("bbbb");
 				return false;
 			}
 			return true;

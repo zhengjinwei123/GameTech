@@ -1,5 +1,6 @@
 #include <zbluenet/net/epoller.h>
 #include <zbluenet/net/io_device.h>
+#include <zbluenet/log.h>
 
 #include <fcntl.h>
 #define MAX_EPOLL_TIMEOUT_MSEC (30 * 60 * 1000)
@@ -31,7 +32,7 @@ namespace zbluenet {
 				return -1;
 			}
 			int flags = ::fcntl(epoll_fd_, F_GETFD, 0);
-			if (::fcntl(epoll_fd_, F_SETFD, flags | FD_CLOEXEC) ! = 0) {
+			if (::fcntl(epoll_fd_, F_SETFD, flags | FD_CLOEXEC) != 0) {
 				return -1;
 			}
 			return 0;
@@ -58,7 +59,9 @@ namespace zbluenet {
 			if (io_device->getWriteCallback()) {
 				event.events |= EPOLLOUT;
 			}
+			
 			if (::epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, io_device->getFD(), &event) != 0) {
+				LOG_DEBUG("Epoller::add failed %d", io_device->getFD());
 				return false;
 			}
 			return true;

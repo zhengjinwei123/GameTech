@@ -2,6 +2,7 @@
 #define ZBLUENET_THREAD_H
 
 #include <zbluenet/semaphore.h>
+#include <thread>
 
 namespace zbluenet {
 	class Thread {

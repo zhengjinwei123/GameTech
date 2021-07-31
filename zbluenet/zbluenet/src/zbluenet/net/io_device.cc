@@ -1,22 +1,40 @@
 #include <zbluenet/net/io_device.h>
-
-#include <zbluenet/net/io_service.h>
-#include <zbluenet/net/platform.h>
-#include <fcntl.h>
+#include <zbluenet/log.h>
+#include <zbluenet/net/network.h>
 
 namespace zbluenet {
 	namespace net {
 		IODevice::IODevice() :
-			io_service_(nullptr),
 			id_(0),
 			fd_(-1),
-			write_event_active_(false)
+			io_service_(nullptr)
 		{
 
 		}
+
 		IODevice::~IODevice()
 		{
 			detachIOService();
+		}
+
+		void IODevice::setId(int64_t id)
+		{
+			id_ = id; 
+		}
+
+		const int64_t IODevice::getId() const
+		{ 
+			return id_;
+		}
+
+		void IODevice::setFD(SOCKET fd) 
+		{ 
+			fd_ = fd;
+		}
+
+		SOCKET IODevice::getFD() const
+		{
+			return fd_; 
 		}
 
 		bool IODevice::attachIOService(IOService &io_service)
@@ -24,27 +42,31 @@ namespace zbluenet {
 			if (io_service_ != nullptr) {
 				detachIOService();
 			}
+			if (io_service.addIODevice(this) == false) {
+				return false;
+			}
+			io_service_ = &io_service;
+			return true;
 		}
 
 		void IODevice::detachIOService()
 		{
+			if (nullptr == io_service_) {
+				return;
+			}
 
+			io_service_->removeIODevice(this);
+			io_service_ = nullptr;
 		}
 
-		void IODevice::setReadCallback(const EventCallback &read_cb)
+		void IODevice::setReadCallback(const ReadCallback &read_cb)
 		{
 			read_cb_ = read_cb;
-			if (io_service_ != nullptr) {
-				io_service_->updateIODevice(this);
-			}
 		}
 
 		void IODevice::setWriteCallback(const EventCallback &write_cb)
 		{
 			write_cb_ = write_cb;
-			if (io_service_ != nullptr) {
-				io_service_->updateIODevice(this);
-			}
 		}
 
 		void IODevice::setErrorCallback(const EventCallback &error_cb)
@@ -55,46 +77,29 @@ namespace zbluenet {
 		int IODevice::read(char *buffer, size_t size)
 		{
 #ifdef _WIN32
-
+			return 0;
 #else
 			return ::read(fd_, buffer, size);
 #endif
 		}
-		
+
 		int IODevice::write(const char *buffer, size_t size)
 		{
 #ifdef _WIN32
-
+			return 0;
 #else
 			return ::write(fd_, buffer, size);
 #endif
 		}
+
 		bool IODevice::setNonblock()
 		{
-#ifdef _WIN32
-
-#else
-			int flags = ::fcntl(fd_, F_GETFL, 0);
-			if (::fcntl(fd_, F_SETFL, flags | O_NONBLOCK) != 0) {
-				return false;
-			}
-
-			return true;
-#endif
+			return NetWork::makeNonblock(fd_) == 0;
 		}
 
 		bool IODevice::setCloseOnExec()
 		{
-#ifdef _WIN32
-
-#else
-			int flags = ::fcntl(fd_, F_GETFD, 0);
-			if (::fcntl(fd_, F_SETFD, flags | FD_CLOEXEC) != 0) {
-				return false;
-			}
-
-			return true;
-#endif
+			return NetWork::setCloseOnExec(fd_) == 0;
 		}
 
 	} // namespace net

@@ -12,6 +12,7 @@ namespace zbluenet {
 		NetThread::NetThread(int max_recv_packet_lenth, int max_send_packet_length, const CreateMessageFunc &create_message_func) :
 			id_(-1),
 			reactor_(nullptr),
+			command_queue_(0),
 			net_protocol_(max_recv_packet_lenth, create_message_func),
 			encode_buffer_(max_send_packet_length),
 			new_net_cmd_cb_(nullptr)
@@ -47,7 +48,7 @@ namespace zbluenet {
 			reactor_->setRecvBufferInitSize(1024);
 			reactor_->setSendBufferInitSize(1024);
 
-			// 消息回调
+			// 解码前的消息回调
 			reactor_->setRecvMessageCallback(std::bind(&NetThread::onRecvMessage, this, std::placeholders::_1,
 				std::placeholders::_2, std::placeholders::_3));
 			// 关闭回调
@@ -55,13 +56,24 @@ namespace zbluenet {
 			// 出错回调
 			reactor_->setErrorCallback(std::bind(&NetThread::onError, this, std::placeholders::_1,
 				std::placeholders::_2, std::placeholders::_3));
+			// 解码后的消息回调
+			reactor_->setNewNetCommandCallback(new_net_cmd_cb);
 
+#ifdef _WIN32
+			// windows 下手动发送消息
 			reactor_->setWriteMessageCallback([=]()-> void {
 				this->onNetCommand();
 			});
+#else
+			// linux 下 epoll 会监控写事件
+			if (false == command_queue_.attach(*reactor_)) {
+				return false;
+			}
 
-			reactor_->setNewNetCommandCallback(new_net_cmd_cb);
-
+			command_queue_.setRecvMessageCallback([=](NetCommandQueue *queue) -> void {
+				this->onNetCommand(queue);
+			});
+#endif
 
 			// 线程id
 			id_ = id;
@@ -150,11 +162,14 @@ namespace zbluenet {
 			reactor_->quit();
 		}
 		// 需要发送的消息， 在线程的循环中处理
-		void NetThread::onNetCommand()
+		void NetThread::onNetCommand(NetCommandQueue *queue)
 		{
 			NetCommand *cmd_raw = nullptr;
-
-			while (command_queue_.popIfNotEmpty(cmd_raw)) {
+#ifdef _WIN32
+			while (command_queue_.pop(cmd_raw)) {
+#else
+			while (queue->pop(cmd_raw)) {
+#endif
 				if (nullptr == cmd_raw) {
 					quit();
 					return;

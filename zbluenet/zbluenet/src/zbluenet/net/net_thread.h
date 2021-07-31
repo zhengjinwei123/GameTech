@@ -11,6 +11,7 @@
 #include <zbluenet/net/reactor.h>
 #include <zbluenet/protocol/net_protocol.h>
 #include <zbluenet/protocol/net_command.h>
+#include <zbluenet/net/message_queue.h>
 
 namespace zbluenet {
 
@@ -32,9 +33,8 @@ namespace zbluenet {
 		public:
 			using CreateMessageFunc = std::function<zbluenet::exchange::BaseStruct * (int)>; // 创建消息实体的接口
 			using NewNetCommandCallback = std::function<void (std::unique_ptr<NetCommand> &)>; // 接收消息的回调函数, 主线程传递进来的
-			using NetCommandQueue = ConcurrentQueue<NetCommand *>; // 发送消息的队列
+			using NetCommandQueue = MessageQueue<NetCommand *>; // 发送消息的队列
 			using BroadcastList = std::set<TcpSocket::SocketId>;
-
 			using RecvMessageCallback = std::function< void (NetThread *, TcpSocket::SocketId, DynamicBuffer *, const NewNetCommandCallback &)>;
 
 			NetThread( int max_recv_packet_lenth, int max_send_packet_length, const CreateMessageFunc &create_message_func);
@@ -64,7 +64,7 @@ namespace zbluenet {
 			void onRecvMessage(Reactor *reactor, TcpSocket::SocketId socket_id, DynamicBuffer *buffer);
 			void onPeerClose(Reactor *reactor, TcpSocket::SocketId socket_id);
 			void onError(Reactor *reactor, TcpSocket::SocketId socket_id, int error);
-			void onNetCommand();
+			void onNetCommand(NetCommandQueue *queue = nullptr);
 
 			void quit();
 

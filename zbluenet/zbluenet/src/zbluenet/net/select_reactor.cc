@@ -21,7 +21,7 @@ namespace zbluenet {
 		{
 			auto iter = sockets_.find(socket_id);
 			if (iter != sockets_.end()) {
-				fd_to_socketId_map_.erase(iter->second->GetFD());
+				fd_to_socketId_map_.erase(iter->second->getFD());
 			}
 			Reactor::closeSocket(socket_id);
 		}
@@ -34,7 +34,7 @@ namespace zbluenet {
 					std::lock_guard<std::mutex> lock(mutex_);
 					for (auto newSock : new_sockets_) {
 						std::unique_ptr<TcpSocket> peer_socket(newSock);
-						fd_to_socketId_map_.insert(std::make_pair(peer_socket->GetFD(), peer_socket->getId()));
+						fd_to_socketId_map_.insert(std::make_pair(peer_socket->getFD(), peer_socket->getId()));
 
 						Reactor::attachSocket(peer_socket);
 					}
@@ -71,12 +71,12 @@ namespace zbluenet {
 				client_change_ = false;
 				fd_read_.zero();
 				// 将描述符 加入集合
-				max_sock_ = sockets_.begin()->second->GetFD();
+				max_sock_ = sockets_.begin()->second->getFD();
 				for (auto iter  : sockets_) {
-					fd_read_.add(iter.second->GetFD());
+					fd_read_.add(iter.second->getFD());
 
-					if (max_sock_ < iter.second->GetFD()) {
-						max_sock_ = iter.second->GetFD();
+					if (max_sock_ < iter.second->getFD()) {
+						max_sock_ = iter.second->getFD();
 					}
 				}
 				fd_read_back_.copy(fd_read_);
@@ -90,7 +90,7 @@ namespace zbluenet {
 			for (auto iter : connections_) {
 				if (iter.second->getWriteBuffer().readableBytes() > 0) {
 					need_write = true;
-					fd_write_.add(iter.second->getSocket()->GetFD());
+					fd_write_.add(iter.second->getSocket()->getFD());
 				}
 			}
 
@@ -148,7 +148,7 @@ namespace zbluenet {
 			}
 #else
 			for (auto iter = sockets_.begin(); iter != sockets_.end();++iter) {
-				if (fd_read_.has(iter->second->GetFD())) {
+				if (fd_read_.has(iter->second->getFD())) {
 					if (iter->second->getReadCallback()) {
 						iter->second->getReadCallback()(iter->second);
 					}

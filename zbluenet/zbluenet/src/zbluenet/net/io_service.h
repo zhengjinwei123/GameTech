@@ -3,14 +3,16 @@
 
 #include <zbluenet/class_util.h>
 #include <zbluenet/timer_heap.h>
-#include <zbluenet/timestamp.h>
-#include <zbluenet/net/io_device.h>
 
 #include <stdint.h>
 #include <functional>
 
 namespace zbluenet {
+	class Timestamp;
+
 	namespace net {
+
+		class IODevice;
 
 		class IOService: public Noncopyable {
 		public:
@@ -18,38 +20,20 @@ namespace zbluenet {
 			using TimerCallback = std::function<void(TimerId)>;
 
 		public:
-			IOService() : quit_(false) {}
-			virtual ~IOService() {}
+			IOService();
+			virtual ~IOService();
 
 			virtual void loop() = 0;
-			void quit() { quit_ = true;  }
+			void quit();
 
-			virtual bool addIODevice(IODevice *io_device)
-			{
-				return true;
-			}
+			virtual bool addIODevice(IODevice *io_device);
+			virtual bool removeIODevice(IODevice *io_device);
 
-			virtual bool removeIODevice(IODevice *io_device)
-			{
-				return true;
-			}
-
-			TimerId startTimer(int64_t timeout_ms, const TimerCallback &timer_cb, int call_times = -1)
-			{
-				Timestamp now;
-				return timer_heap_.addTimer(now, timeout_ms, timer_cb, call_times);
-			}
-
-			void stopTimer(TimerId timer_id)
-			{
-				timer_heap_.removeTimer(timer_id);
-			}
+			TimerId startTimer(int64_t timeout_ms, const TimerCallback &timer_cb, int call_times = -1);
+			void stopTimer(TimerId timer_id);
 
 		protected:
-			void checkTimeout(const Timestamp &now)
-			{
-				timer_heap_.checkTimeout(now);
-			}
+			void checkTimeout(const Timestamp &now);
 
 		protected:
 			bool quit_;

@@ -18,8 +18,6 @@ namespace zbluenet {
 			TcpSocket();
 			virtual ~TcpSocket();
 
-			void setFd(SOCKET fd) { fd_ = fd;  }
-			SOCKET GetFD() const { return fd_;  }
 			bool open(SocketAddress::Protocol::type protocol);
 			void close();
 			bool connect(const SocketAddress &addr);
@@ -69,10 +67,7 @@ namespace zbluenet {
 			/************************************************************************/
 			bool acceptNonblock(TcpSocket *peer);
 
-			bool setNonblock();
-
-		private:
-			SOCKET fd_;
+			virtual bool setNonblock();
 		};
 
 	} // namespace net
