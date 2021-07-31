@@ -13,6 +13,31 @@ src/zbluenet/logger_base.cc \
 src/zbluenet/logger_file_sink.cc \
 src/zbluenet/logger_mgr.cc \
 src/zbluenet/logger_stderr_sink.cc \
+src/zbluenet/exchange/base_struct.cc \
+src/zbluenet/net/acceptor.cc \
+src/zbluenet/net/epoll_reactor.cc \
+src/zbluenet/net/epoller.cc \
+src/zbluenet/net/epoll_acceptor.cc \
+src/zbluenet/net/fd_set.cc \
+src/zbluenet/net/io_device.cc \
+src/zbluenet/net/io_service.cc \
+src/zbluenet/net/net_id.cc \
+src/zbluenet/net/net_thread.cc \
+src/zbluenet/net/network.cc \
+src/zbluenet/net/reactor.cc \
+src/zbluenet/net/select_acceptor.cc \
+src/zbluenet/net/select_reactor.cc \
+src/zbluenet/net/socket_address.cc \
+src/zbluenet/net/tcp_connection.cc \
+src/zbluenet/net/tcp_socket.cc \
+src/zbluenet/protocol/net_command.cc \
+src/zbluenet/protocol/net_protocol.cc \
+src/zbluenet/server/game_server.cc \
+src/zbluenet/server/game_service.cc \
+src/zbluenet/server/tcp_service.cc \
+src/zbluenet/net/self_pipe.cc \
+src/zbluenet/net/epoll_service.cc
+
 
 LINK_TYPE = static
 INCLUDE = -Isrc

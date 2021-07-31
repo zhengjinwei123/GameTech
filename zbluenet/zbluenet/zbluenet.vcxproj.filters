@@ -123,6 +123,33 @@
     <ClCompile Include="src\demo\server_app.cc">
       <Filter>demo</Filter>
     </ClCompile>
+    <ClCompile Include="src\zbluenet\net\epoll_acceptor.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\epoller.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\epoll_reactor.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\io_service.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\io_device.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\acceptor.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\network.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\self_pipe.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zbluenet\net\epoll_service.cc">
+      <Filter>头文件\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\zbluenet\timestamp.h">
@@ -245,9 +272,6 @@
     <ClInclude Include="src\zbluenet\net\net_thread.h">
       <Filter>头文件\net</Filter>
     </ClInclude>
-    <ClInclude Include="src\zbluenet\net\io_service.h">
-      <Filter>头文件\net</Filter>
-    </ClInclude>
     <ClInclude Include="src\zbluenet\server\tcp_service.h">
       <Filter>头文件\server</Filter>
     </ClInclude>
@@ -271,6 +295,24 @@
     </ClInclude>
     <ClInclude Include="src\demo\server_app.h">
       <Filter>demo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\epoll_acceptor.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\io_service.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\epoller.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\epoll_reactor.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\self_pipe.h">
+      <Filter>头文件\net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zbluenet\net\epoll_service.h">
+      <Filter>头文件\net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

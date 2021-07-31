@@ -1,6 +1,9 @@
 TARGET = bin/demo
 SRCS = \
-src/demo/main.cc
+src/demo/main.cc \
+src/demo/c2s_login_message_handler.cc \
+src/demo/c2s_message.cc \
+src/demo/server_app.cc
 
 LINK_TYPE = exec
 INCLUDE = -Isrc
