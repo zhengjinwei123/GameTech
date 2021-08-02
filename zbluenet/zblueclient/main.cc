@@ -11,6 +11,7 @@
 
 #define INT_SERVER_PORT 9091
 #define STR_SERVER_IP "127.0.0.1"
+//#define STR_SERVER_IP "10.235.200.249"
 #define INT_DATABUFFER_SIZE 1024
 #define STR_EXIT "exit"
 #define  WINSOCK_VERSION MAKEWORD(2,0)
@@ -62,7 +63,7 @@ void main(void)
 	while (1)
 	{
 		memset(szDataBuffer, 0, INT_DATABUFFER_SIZE);
-		//scanf("%s", szDataBuffer);
+		scanf("%s", szDataBuffer);
 
 		
 		
@@ -88,6 +89,13 @@ void main(void)
 			if (1 > send(sockClient, buffer.readBegin(), buffer.readableBytes(), 0))
 			{
 				printf("Failed to send data!\r\n");
+			}
+
+			char buffer[1024];
+			memset(buffer, 0, sizeof(buffer));
+			int recvN = recv(sockClient, buffer, sizeof(buffer), 0);
+			if (recvN > 0) {
+				printf("recv message %s", buffer);
 			}
 		}
 		Sleep(100);

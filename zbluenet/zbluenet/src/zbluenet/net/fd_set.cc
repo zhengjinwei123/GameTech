@@ -19,11 +19,14 @@ namespace zbluenet {
 #ifdef _WIN32
 			if (nSocketNum < 64) {
 				nSocketNum = 64;
+			} else if (nSocketNum > FD_SETSIZE) {
+				nSocketNum = FD_SETSIZE;
 			}
+
 			fd_size_ = sizeof(u_int) + (sizeof(SOCKET) * nSocketNum);
 #else
-			if (nSocketNum < 65535) {
-				nSocketNum = 65535;
+			if (nSocketNum < 30000) {
+				nSocketNum = 30000;
 			}
 			fd_size_ = nSocketNum / (8 * sizeof(char)) + 1;
 #endif // _WIN32

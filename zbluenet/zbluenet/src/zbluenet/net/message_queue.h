@@ -50,6 +50,8 @@ namespace zbluenet {
 			{
 #ifndef _WIN32
 				return io_service_;
+#else
+				return nullptr;
 #endif
 			}
 

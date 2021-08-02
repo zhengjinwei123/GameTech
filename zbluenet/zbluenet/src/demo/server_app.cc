@@ -31,21 +31,33 @@ void ServerApp::start()
 {
 	zbluenet::LogManager::getInstance()->setMaxLoggerCount(2);
 
-	pserver_ = new zbluenet::server::GameServer("127.0.0.1", 9091, 2);
+	pserver_ = new zbluenet::server::GameServer("127.0.0.1", 9091, 2);//10.235.200.249
 	std::string log_file_main = "./zbluenet.%Y%m%d.log";
 	pserver_->initMainLogger(log_file_main, zbluenet::LogLevel::DEBUG, true);
 	std::string log_file_net = "./net.%Y%m%d.log";
 	pserver_->initNetLogger(log_file_net, zbluenet::LogLevel::DEBUG, true);
 
+	// 服务初始化
+	if (false == pserver_->init(
+		std::bind(&ServerApp::onConnect, this, std::placeholders::_1),
+		std::bind(&ServerApp::onDisconnect, this, std::placeholders::_1),
+		nullptr, 30000)) {
+		LOG_DEBUG("server initialized fail");
+		return;
+	}
+
 	// 注册消息
 	C2SLoginMessageHandler::bind();
 
-	if (false == pserver_->start(
-		std::bind(&ServerApp::onConnect, this, std::placeholders::_1),
-		std::bind(&ServerApp::onDisconnect, this, std::placeholders::_1),
-		nullptr
-	)) {
-		LOG_DEBUG("server start fail");
-		return;
-	}
+	// 开启定时器
+	pserver_->startTimer(1000, [](int64_t timer_id)-> void {
+		LOG_DEBUG("timer %lld called", timer_id);
+	}, 10);
+
+	pserver_->startTimer(1001, [](int64_t timer_id)-> void {
+		LOG_DEBUG("timer %lld called", timer_id);
+	});
+
+	// 启动服务
+	pserver_->start();
 }

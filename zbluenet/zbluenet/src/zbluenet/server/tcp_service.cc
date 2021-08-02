@@ -24,7 +24,6 @@ namespace zbluenet {
 			listen_addr_(host, port),
 			net_thread_num_(net_thread_num),
 			net_acceptor_(nullptr),
-			recv_message_cb_(nullptr),
 			max_request_per_second_(0)
 		{
 			// 初始化win32 网络环境
@@ -51,7 +50,7 @@ namespace zbluenet {
 #endif
 		}
 
-		bool TcpService::createService(const RecvMessageCallback &recv_message_cb, uint16_t  max_clien_num)
+		bool TcpService::createService(uint16_t  max_clien_num)
 		{
 			if (false == listen_socket_.passiveOpenNonblock(listen_addr_)) {
 				LOG_MESSAGE_ERROR("TcpServer::createService passiveOpenNonblock failed");
@@ -68,11 +67,18 @@ namespace zbluenet {
 
 			max_connection_num_ = max_clien_num;
 
-			recv_message_cb_ = recv_message_cb;
+#ifndef _WIN32
+			epoll_service_ = new EpollService(1000);
+			client_net_command_queue_.attach(*epoll_service_);
+			client_net_command_queue_.setRecvMessageCallback([=](NetCommandQueue *queue) -> void {
+				this->onClientNetCommandQueueRead(queue);
+			});
+#endif
+
 			return true;
 		}
 
-		bool TcpService::init(const CreateMessageFunc &create_messgae_func, int max_request_per_second)
+		bool TcpService::init(const CreateMessageFunc &create_messgae_func, const RecvMessageCallback &recv_message_cb, int max_request_per_second)
 		{
 			if (net_acceptor_ == nullptr) {
 				return false;
@@ -98,21 +104,13 @@ namespace zbluenet {
 					81920,
 					409600,
 					std::bind(&TcpService::pushClientNetCommand, this, std::placeholders::_1),
-					recv_message_cb_))
+					recv_message_cb))
 				{
 					return false;
 				}
 			}
 
 			max_request_per_second_ = max_request_per_second;
-
-#ifndef _WIN32
-			epoll_service_ = new EpollService(1000);
-			client_net_command_queue_.attach(*epoll_service_);
-			client_net_command_queue_.setRecvMessageCallback([=](NetCommandQueue *queue) -> void {
-				this->onClientNetCommandQueueRead(queue);
-			});
-#endif
 			return true;
 		}
 
@@ -159,7 +157,7 @@ namespace zbluenet {
 #endif
 		}
 
-		void TcpService::onClientNetCommandQueueRead(MessageQueue<NetCommand *> *queue)
+		void TcpService::onClientNetCommandQueueRead(NetCommandQueue *queue)
 		{
 			NetCommand *cmd_raw = nullptr;
 
@@ -170,9 +168,6 @@ namespace zbluenet {
 #else
 			while (queue->pop(cmd_raw)) {
 #endif
-
-				//LOG_DEBUG("onClientNetCommandQueueRead process message %d", cmd_raw->message_id);
-
 				this->processNetCommand(cmd_raw);
 				if (++count >= 100) {
 					return;
@@ -337,6 +332,21 @@ namespace zbluenet {
 		{
 			client_net_command_queue_.push(cmd.get());
 			cmd.release();
+		}
+
+		IOService::TimerId TcpService::startTimer(int64_t timeout_ms, const IOService::TimerCallback &timer_cb, int call_times)
+		{
+#ifdef _WIN32
+			zbluenet::Timestamp now;
+			return timer_heap_.addTimer(now, timeout_ms, timer_cb, call_times);
+#else
+			return epoll_service_->startTimer(timeout_ms, timer_cb, call_times);
+#endif
+		}
+
+		void TcpService::stopTimer(TimerId timer_id)
+		{
+			timer_heap_.removeTimer(timer_id);
 		}
 
 	} // namespace server

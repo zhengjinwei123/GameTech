@@ -102,23 +102,23 @@ namespace zbluenet {
 			return (iter->second)();
 		}
 
-		// 启动服务
-		bool GameServer::start(const ConnectEventCallback &on_conn_cb,
+
+		bool GameServer::init(const ConnectEventCallback &on_conn_cb,
 			const DisconectEventCallback &on_disconnect_cb,
-			const ExceedRequestEventCallback &on_exceed_request_frequency_limit_cb)
-		{
+			const ExceedRequestEventCallback &on_exceed_request_frequency_limit_cb, int max_conn_num) {
 			if (this->check() == false) {
-				LOG_ERROR("GameServer::start check fail");
+				LOG_ERROR("GameServer::start check fail, please init logger first");
 				return false;
 			}
 
-			if (false == pGameService_->createService(std::bind(&GameServer::onRecvMessage, this, std::placeholders::_1,
-				std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), 1024)) {
+			if (false == pGameService_->createService(max_conn_num)) {
 				LOG_ERROR("createService fail");
 				return false;
 			}
 
-			if (false == pGameService_->init(std::bind(&GameServer::createMessageMap, this, std::placeholders::_1))) {
+			if (false == pGameService_->init(
+				std::bind(&GameServer::createMessageMap, this, std::placeholders::_1),
+				std::bind(&GameServer::onRecvMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4))) {
 				LOG_ERROR("service init fail");
 				return false;
 			}
@@ -127,9 +127,13 @@ namespace zbluenet {
 			pGameService_->setDisconnectCallback(on_disconnect_cb);
 			pGameService_->setExceedRequestFrequencyLimitCallback(on_exceed_request_frequency_limit_cb);
 
-			pGameService_->start();
-
 			return true;
+		}
+
+		// 启动服务
+		void GameServer::start()
+		{
+			pGameService_->start();
 		}
 
 	} // namespace server

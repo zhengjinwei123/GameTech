@@ -1,4 +1,5 @@
 #include <zbluenet/net/reactor.h>
+#include <zbluenet/log.h>
 
 #include <algorithm>
 
@@ -266,7 +267,6 @@ namespace zbluenet {
 			 if (connections_.end() == iter) {
 				 return;
 			 }
-
 			 TcpConnection *connection = iter->second;
 			 DynamicBuffer &write_buffer = connection->getWriteBuffer();
 
@@ -350,7 +350,6 @@ namespace zbluenet {
 			 if (connection->getStatus() != TcpConnection::Status::CONNECTED) {
 				 return false;
 			 }
-
 			 TcpSocket *socket = connection->getSocket();
 			 DynamicBuffer &write_buffer = connection->getWriteBuffer();
 
@@ -383,7 +382,6 @@ namespace zbluenet {
 				 write_buffer.reserveWritableBytes(remain_size);
 				 ::memcpy(write_buffer.writeBegin(), buffer, remain_size); // 写数据
 				 write_buffer.write(remain_size); // 记录指针后移
-
 				 connection->setSendCompleteCallback(send_complete_cb);
 				 socket->setWriteCallback(std::bind(&Reactor::onSocketWrite, this, std::placeholders::_1));
 			 }

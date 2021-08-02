@@ -2,8 +2,6 @@
 #include <zbluenet/log.h>
 #include <zbluenet/thread.h>
 
-
-
 namespace zbluenet {
 	namespace net {
 
@@ -55,6 +53,8 @@ namespace zbluenet {
 				if (false == doNetEvent()) {
 					quit_ = true;
 				}
+
+				this->doWriteEvent();
 			}
 
 			LOG_MESSAGE_DEBUG("SelectReactor::loop:  thread[%d] exit", Thread::getId());
@@ -85,14 +85,14 @@ namespace zbluenet {
 			}
 
 			// 计算可写集合
-			bool need_write = false;
+	/*		bool need_write = false;
 			fd_write_.zero();
 			for (auto iter : connections_) {
 				if (iter.second->getWriteBuffer().readableBytes() > 0) {
 					need_write = true;
 					fd_write_.add(iter.second->getSocket()->getFD());
 				}
-			}
+			}*/
 
 			timeval dt = { 0, 1 };
 			int ret = 0;
@@ -102,11 +102,13 @@ namespace zbluenet {
 			maxSock = max_sock_ + 1;
 #endif
 
-			if (need_write) {
-				ret = select(maxSock, fd_read_.fdset(), fd_write_.fdset(), nullptr, &dt);
-			} else {
-				ret = select(maxSock, fd_read_.fdset(), nullptr, nullptr, &dt);
-			}
+			/*	if (need_write) {
+					ret = select(maxSock, fd_read_.fdset(), fd_write_.fdset(), nullptr, &dt);
+				} else {
+
+				}
+	*/
+			ret = select(maxSock, fd_read_.fdset(), nullptr, nullptr, &dt);
 
 			if (ret <0) {
 				if (errno == EINTR) {
@@ -120,8 +122,6 @@ namespace zbluenet {
 			}
 
 			this->doReadEvent();
-
-			this->doWriteEvent();
 
 			return true;
 		}
@@ -162,31 +162,6 @@ namespace zbluenet {
 			if (write_message_cb_) {
 				write_message_cb_();
 			}
-
-//#ifdef _WIN32
-//			auto pfdset = fd_write_.fdset();
-//			for (int i = 0; i < pfdset->fd_count; ++i) {
-//				auto iter = fd_to_socketId_map_.find(pfdset->fd_array[i]);
-//				if (iter == fd_to_socketId_map_.end()) {
-//					continue;
-//				}
-//				auto iter_socket = sockets_.find(iter->second);
-//				if (iter_socket == sockets_.end()) {
-//					continue;
-//				}
-//				if (iter_socket->second->getWriteCallback()) {
-//					iter_socket->second->getWriteCallback()(iter_socket->second);
-//				}
-//		}
-//#else
-//			for (auto iter = sockets_.begin(); iter != sockets_.end(); ++iter) {
-//				if (fd_write_.has(iter->second->GetFD())) {
-//					if (iter->second->getWriteCallback()) {
-//						iter->second->getWriteCallback()(iter->second);
-//					}
-//				}
-//			}
-//#endif
 		}
 
 	} // namespace net

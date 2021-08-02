@@ -161,9 +161,6 @@
     <ClInclude Include="src\zbluenet\thread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\demo\thread.hpp">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\zbluenet\base_heap_value.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -214,12 +211,6 @@
     </ClInclude>
     <ClInclude Include="src\zbluenet\logger_stderr_sink.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\demo\windows_tcp_server.hpp">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\demo\windows_tcp_client.hpp">
-      <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="src\zbluenet\net\fd_set.h">
       <Filter>头文件\net</Filter>

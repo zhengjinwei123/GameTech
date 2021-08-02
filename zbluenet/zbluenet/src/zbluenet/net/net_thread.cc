@@ -174,7 +174,6 @@ namespace zbluenet {
 					quit();
 					return;
 				}
-
 				std::unique_ptr<NetCommand> cmd(cmd_raw);
 				// broadcast
 				if (NetCommand::Type::BROADCAST == cmd->type) {
@@ -203,7 +202,6 @@ namespace zbluenet {
 						closeSocket(cmd->id.socket_id);
 						continue;
 					}
-
 					reactor_->sendMessage(cmd->id.socket_id, encode_buffer_.readBegin(), encode_buffer_.readableBytes());
 				} else if (NetCommand::Type::ENABLE_BROADCAST == cmd->type) {
 					broadcast_list_.insert(cmd->id.socket_id);
