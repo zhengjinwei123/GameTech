@@ -33,7 +33,7 @@ g      g
 ```
 
 4. 技术
-```
+``` c++
 1. 乐观锁帧
 2. websocket 协议通讯 (web端不支持UDP)
 3. H5 Canvas
